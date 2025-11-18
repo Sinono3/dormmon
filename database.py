@@ -23,7 +23,7 @@ class ItemStock(BaseModel):
     logged_at = DateTimeField(default=datetime.datetime.utcnow)
 
 class EventCategory(BaseModel):
-    name = CharField()
+    name = CharField(unique=True)
     icon = CharField()
     created_at = DateTimeField(default=datetime.datetime.now)
 
@@ -56,3 +56,15 @@ class EventTemplateItemStock(BaseModel):
     item = ForeignKeyField(Item, backref='event_template_item_stocks', on_delete='CASCADE')
     stock = IntegerField()
 
+category_trash, _ = EventCategory.get_or_create(
+    name='Trash',
+    defaults={'icon': '🗑️', 'created_at': datetime.now()}
+)
+category_power, _ = EventCategory.get_or_create(
+    name='Power',
+    defaults={'icon': '⚡️', 'created_at': datetime.now()}
+)
+category_purchases, _ = EventCategory.get_or_create(
+    name='Purchases',
+    defaults={'icon': '🛍️', 'created_at': datetime.now()}
+)
