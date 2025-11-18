@@ -25,13 +25,13 @@ class ItemStock(BaseModel):
 class EventCategory(BaseModel):
     name = CharField(unique=True)
     icon = CharField()
-    created_at = DateTimeField(default=datetime.datetime.now)
+    created_at = DateTimeField(default=datetime.datetime.utcnow)
 
 class Event(BaseModel):
     user = ForeignKeyField(User, backref='events', on_delete='CASCADE')
     category = ForeignKeyField(EventCategory, backref='events', on_delete='CASCADE')
-    logged_at = DateTimeField(default=datetime.datetime.now)
-    modified_at = DateTimeField(default=datetime.datetime.now)
+    logged_at = DateTimeField(default=datetime.datetime.utcnow)
+    modified_at = DateTimeField(default=datetime.datetime.utcnow)
     photo_path = TextField()
     cost = DecimalField(10, 2, null=True)
     stock = ForeignKeyField(ItemStock, backref='event', null=True, unique=True, on_delete='CASCADE')

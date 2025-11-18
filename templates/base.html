@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DormMon</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DormMon</h1>
+        </header>
+        
+        <nav class="actions">
+            <button hx-get="/dialog/add_user" hx-target="#dialogs" hx-swap="innerHTML">
+                Add User
+            </button>
+            <button hx-get="/dialog/add_category" hx-target="#dialogs" hx-swap="innerHTML">
+                Add Category
+            </button>
+            <button hx-get="/dialog/add_event" hx-target="#dialogs" hx-swap="innerHTML">
+                Add Event
+            </button>
+        </nav>
+        
+        <div id="dialogs"></div>
+        
+        <main>
+            <section>
+                <h2>Users</h2>
+                <div id="users" hx-get="/users" hx-trigger="load, userUpdated from:body">
+                    Loading...
+                </div>
+            </section>
+            
+            <section>
+                <h2>Categories</h2>
+                <div id="categories" hx-get="/categories" hx-trigger="load, categoryUpdated from:body">
+                    Loading...
+                </div>
+            </section>
+            
+            <section>
+                <h2>Events</h2>
+                <div id="events" hx-get="/events" hx-trigger="load, eventUpdated from:body">
+                    Loading...
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
+

@@ -1,4 +1,5 @@
 - [x] Face recognition
-- [ ] Database integration and schema
+- [x] Database integration and schema
+- [ ] Design Remote web interface
+- [/] Remote web interface
 - [ ] Track bought items and balance
-- [ ] Remote web interface with stats

@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 
 # Init database
-people_names = ["Aldo", "Jaz", "Maia"]
-people_paths = ["database/aldo/aldo1.jpg", "database/jaz/jaz1.jpg", "database/maia/maia1.jpg"]
+people_names = ["Aldo", "Jaz", "Maia", "Simon"]
+people_paths = ["database/aldo/aldo1.jpg", "database/jaz/jaz1.jpg", "database/maia/maia1.jpg", "database/simon/simon1.jpg"]
 people_enc = []
 
 for name, path in zip(people_names, people_paths):
@@ -71,7 +71,7 @@ while True:
         cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
     # Display the resulting image
-    # cv2.imshow('Video', frame)
+    cv2.imshow('Video', frame)
 
     # Hit 'q' on the keyboard to quit!
     if cv2.waitKey(1) & 0xFF == ord('q'):

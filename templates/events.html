@@ -1,0 +1,44 @@
+<table>
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Category</th>
+            <th>Cost</th>
+            <th>Benefactors</th>
+            <th>Notes</th>
+            <th>Logged At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.user.name }}</td>
+            <td>{{ event.category.icon }} {{ event.category.name }}</td>
+            <td>
+                {% if event.cost %}
+                    ${{ "%.2f"|format(event.cost) }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if event.cost %}
+                    {% set shares = event.cost_shared_among %}
+                    {% if shares %}
+                        {% for share in shares %}
+                            {{ share.user.name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        All
+                    {% endif %}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ event.notes }}</td>
+            <td>{{ event.logged_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

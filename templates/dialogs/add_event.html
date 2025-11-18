@@ -1,0 +1,99 @@
+<div class="dialog">
+    <h3>Add Event</h3>
+    <form 
+        hx-post="/events" 
+        hx-encoding="multipart/form-data" 
+        hx-target="#dialogs" 
+        hx-swap="innerHTML"
+        hx-on::after-request="htmx.trigger(document.body, 'eventUpdated')"
+    >
+        <div class="form-group">
+            <label for="user_id">User:</label>
+            <select id="user_id" name="user_id" required>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="category_id">Category:</label>
+            <select id="category_id" name="category_id" required>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.icon }} {{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="enable_cost" onchange="toggleCostFields()">
+                Include Cost
+            </label>
+            <div id="cost_fields" class="cost-fields" style="display:none;">
+                <label for="cost">Cost:</label>
+                <input type="number" step="0.01" id="cost" name="cost" disabled>
+                
+                <div class="benefactors-section">
+                    <label>Cost shared among:</label>
+                    <div class="benefactors-list">
+                        {% for user in users %}
+                        <label class="checkbox-label">
+                            <input 
+                                type="checkbox" 
+                                name="benefactors" 
+                                value="{{ user.id }}"
+                                class="benefactor-checkbox"
+                                disabled
+                            >
+                            {{ user.name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <small>If none selected, cost is shared among all users</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="photo">Photo:</label>
+            <input type="file" id="photo" name="photo" accept="image/*" required>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit">Add Event</button>
+            <button type="button" onclick="this.closest('.dialog').remove()">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleCostFields() {
+    const checkbox = document.getElementById('enable_cost');
+    const fields = document.getElementById('cost_fields');
+    const costInput = document.getElementById('cost');
+    const benefactorCheckboxes = document.querySelectorAll('.benefactor-checkbox');
+    
+    if (checkbox.checked) {
+        fields.style.display = 'block';
+        costInput.disabled = false;
+        costInput.required = true;
+        benefactorCheckboxes.forEach(cb => cb.disabled = false);
+    } else {
+        fields.style.display = 'none';
+        costInput.disabled = true;
+        costInput.required = false;
+        costInput.value = '';
+        benefactorCheckboxes.forEach(cb => {
+            cb.disabled = true;
+            cb.checked = false;
+        });
+    }
+}
+</script>
+
