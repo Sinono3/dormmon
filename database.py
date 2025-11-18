@@ -8,7 +8,7 @@ class BaseModel(Model):
         database = db
 
 class User(BaseModel):
-    username = CharField(unique=True)
+    name = CharField(unique=True)
     face_encoding = BlobField()
     created_at = DateTimeField(default=datetime.datetime.utcnow)
    
