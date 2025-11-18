@@ -10,17 +10,17 @@ class BaseModel(Model):
 class User(BaseModel):
     username = CharField(unique=True)
     face_encoding = BlobField()
-    created_at = DateTimeField(default=datetime.datetime.now)
+    created_at = DateTimeField(default=datetime.datetime.utcnow)
    
 class Item(BaseModel):
     name = CharField()
     icon = CharField()
-    created_at = DateTimeField(default=datetime.datetime.now)
-    # category = CharField()
+    created_at = DateTimeField(default=datetime.datetime.utcnow)
 
 class ItemStock(BaseModel):
     item = ForeignKeyField(Item, backref='stocks', on_delete='CASCADE')
     stock = IntegerField()
+    logged_at = DateTimeField(default=datetime.datetime.utcnow)
 
 class EventCategory(BaseModel):
     name = CharField()
@@ -28,14 +28,21 @@ class EventCategory(BaseModel):
     created_at = DateTimeField(default=datetime.datetime.now)
 
 class Event(BaseModel):
-    user = ForeignKeyField(User, backref='events')
-    category = ForeignKeyField(EventCategory, backref='events')
+    user = ForeignKeyField(User, backref='events', on_delete='CASCADE')
+    category = ForeignKeyField(EventCategory, backref='events', on_delete='CASCADE')
     logged_at = DateTimeField(default=datetime.datetime.now)
     modified_at = DateTimeField(default=datetime.datetime.now)
     photo_path = TextField()
     cost = DecimalField(10, 2, null=True)
     stock = ForeignKeyField(ItemStock, backref='event', null=True, unique=True, on_delete='CASCADE')
     notes = TextField(default="") 
+
+# If the event has a cost?
+# Who should pay for this event? Those who benefit from it.
+# There can be multiple benefactors per event, and the cost is divided evenly between the benefactors.
+class EventBenefactor(BaseModel):
+    event = ForeignKeyField(Event, backref='benefactors', on_delete='CASCADE')
+    user = ForeignKeyField(User, backref='events_benefitted', on_delete='CASCADE')
 
 # Template
 class EventTemplate(BaseModel):
