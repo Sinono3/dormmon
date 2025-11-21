@@ -1,6 +1,8 @@
+from io import BytesIO
 import tkinter as tk
 from typing import Tuple
 from datetime import datetime
+import requests
 
 import cv2
 import face_recognition
@@ -95,6 +97,7 @@ class CameraApp(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.cap = None
+        self.img = None
         self.prev_face_ids = []
         self.process_idx = 0
         self.countdown = COUNTDOWN_START
@@ -104,6 +107,7 @@ class CameraApp(tk.Frame):
 
     def init(self):
         self.cap = cv2.VideoCapture(0)
+        self.img = None
         self.prev_face_ids = []
         self.process_idx = 0
         self.countdown = COUNTDOWN_START
@@ -112,6 +116,7 @@ class CameraApp(tk.Frame):
     def deinit(self):
         self.cap.release()
         self.cap = None
+        self.img = None
 
     def update_frame(self):
         confirmed_user_id = None
@@ -194,32 +199,51 @@ class CameraApp(tk.Frame):
 
             # Display `frame` in tkinter
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img = Image.fromarray(cv2image)
-            imgtk = ImageTk.PhotoImage(image=img)
+            self.img = Image.fromarray(cv2image)
+            imgtk = ImageTk.PhotoImage(image=self.img)
             self.video_label.imgtk = imgtk  # Keep a reference to prevent Garbage Collection
             self.video_label.configure(image=imgtk)
 
         self.process_idx += 1
 
         if confirmed_user_id is not None:
-            self.controller.switch("MenuApp")
+            user_id = face_ids[0]
+            user_name = self.controller.user_name_by_id[user_id]
+            category_id = 1 # trash
+            notes = "trash"
+            img_bytes = BytesIO()
+            self.img.convert('RGB').save(img_bytes, format='JPEG', optimize=True, quality=70)
+            img_bytes.seek(0)
 
-            selected_user_id = face_ids[0]
-            selected_user_name = self.controller.user_name_by_id[selected_user_id]
-            print(f"Selected user {selected_user_id}: {selected_user_name}")
+            print(f"Adding event:")
+            print(f"User {user_id}: {user_name}")
+            print(f"Category: {category_id}")
+            print(f"Notes: {category_id}")
 
-            category_trash, _ = EventCategory.get_or_create(
-                name='Trash',
-                defaults={'icon': '🗑️', 'created_at': datetime.utcnow()}
+            r = requests.post(
+                "http://localhost:5000/events",
+                data=dict(user_id=user_id, category_id=category_id, notes=notes),
+                files={'photo': img_bytes}
             )
-            event_add(
-                user_id=face_ids[0],
-                category_id=category_trash,
-                photo_path="",
-                notes="trash",
-            )
-            print("Event inserted")
-            
+            if r.status_code == 200:
+                print("Event added successfuly")
+            else:
+                print("Error while adding event:")
+                print(r.status_code)
+                print(r.text)
+            print()
+
+            # category_trash, _ = EventCategory.get_or_create(
+            #     name='Trash',
+            #     defaults={'icon': '🗑️', 'created_at': datetime.utcnow()}
+            # )
+            # event_add(
+            #     user_id=face_ids[0],
+            #     category_id=category_trash,
+            #     photo_path="",
+            #     notes="trash",
+            # )
+            self.controller.switch("MenuApp")           
         else:
             # Schedule the update_frame function to be called again in 10ms
             self.after(10, self.update_frame)

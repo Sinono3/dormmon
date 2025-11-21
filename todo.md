@@ -15,3 +15,7 @@
 - [x] face encoding from DB -> webcam identify -> add event with taken picture
 - [x] Better image and download handling. Adequate access.
 - [x] Display images for events on event table button press
+- [x] Upload picture in `face_add_event.py`
+- [ ] Stop using direct DB calls in `face_add_event.py`. Use API instead. (<- should this be done though?)
+- [ ] Refactor refactor refactor
+- [ ] Integrate with other parts of the group
