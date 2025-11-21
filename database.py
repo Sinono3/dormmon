@@ -33,25 +33,18 @@ class Event(BaseModel):
     logged_at = DateTimeField(default=datetime.datetime.utcnow)
     modified_at = DateTimeField(default=datetime.datetime.utcnow)
     photo_path = TextField()
-    cost = DecimalField(10, 2, null=True)
     stock = ForeignKeyField(ItemStock, backref='event', null=True, unique=True, on_delete='CASCADE')
     notes = TextField(default="") 
 
-# If the event has a cost, who should pay for this event?
-# There can be multiple per event, and the cost is divided evenly between the people.
-class EventCostShare(BaseModel):
-    event = ForeignKeyField(Event, backref='cost_shared_among', on_delete='CASCADE')
-    user = ForeignKeyField(User, backref='events_cost_shared', on_delete='CASCADE')
-
-# # Template
-# class EventTemplate(BaseModel):
-#     category = ForeignKeyField(EventCategory, backref='templates', on_delete='CASCADE')
-#     cost = DecimalField(10, 2, null=True)
-#     notes = TextField(default="")
-
-# # Separate table to not add 2 nullable fields requiring double manual NOT NULL check
-# class EventTemplateItemStock(BaseModel):
-#     template = ForeignKeyField(EventTemplate, backref='stock', on_delete='CASCADE')
-#     item = ForeignKeyField(Item, backref='event_template_item_stocks', on_delete='CASCADE')
-#     stock = IntegerField()
-
+class Ledger(Model):
+    event = ForeignKeyField(Event, backref='ledger_items', null=True, on_delete='CASCADE')
+    payer = ForeignKeyField(User, backref='money_sent', on_delete='CASCADE')
+    beneficiary = ForeignKeyField(User, backref='money_recv', on_delete='CASCADE')
+    amount = DecimalField(15, 2, null=True)
+    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    
+    class Meta:
+        database = db
+        indexes = (
+            (('event', 'payer', 'beneficiary'), False), # False = not unique
+        )
