@@ -69,12 +69,17 @@ tr:nth-child(even) {
 }
 
 .dialog {
-    border: 1px solid #ccc;
-    padding: 20px;
-    margin: 10px 0;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: fixed;          /* take it out of normal flow */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;            /* always on top */
+    background-color: #fefefe;
+    padding: 30px;
+    border-radius: 8px;
+    width: 600px;      /* or any value you want */
+    max-width: 90%;    /* optional */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
 .dialog.success {

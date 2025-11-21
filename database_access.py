@@ -31,7 +31,7 @@ def user_get_by_id(user_id: int) -> User:
     return User.get_by_id(user_id)
 
 
-def user_create(name: str, face_encoding: bytes) -> User:
+def user_add(name: str, face_encoding: bytes) -> User:
     """Create a new user."""
     return User.create(
         name=name, face_encoding=face_encoding, created_at=datetime.utcnow()
@@ -54,7 +54,7 @@ def category_get_by_id(category_id: int) -> EventCategory:
     return EventCategory.get_by_id(category_id)
 
 
-def category_create(name: str, icon: str) -> EventCategory:
+def category_add(name: str, icon: str) -> EventCategory:
     """Create a new event category."""
     return EventCategory.create(name=name, icon=icon, created_at=datetime.utcnow())
 
@@ -70,7 +70,7 @@ def event_get_recent(limit: int = 50):
     return Event.select().order_by(Event.logged_at.desc()).limit(limit)
 
 
-def event_create(
+def event_add(
     user_id: int,
     category_id: int,
     photo_path: str,
@@ -103,7 +103,7 @@ def event_get_cost(event_id: int) -> Optional[int]:
 
 
 # Ledger operations
-def ledger_create(
+def ledger_add(
     event_id: Optional[int],
     payer_id: int,
     beneficiary_id: int,
@@ -126,14 +126,14 @@ def ledger_get_balance(user_id: int) -> int:
     Negative = user owes money (they owe others)
     """
     money_sent = (
-        Ledger.select(fn.Sum(Ledger.amount))
-        .where(Ledger.payer == user_id)
-        .scalar() or 0
+        Ledger.select(fn.Sum(Ledger.amount)).where(Ledger.payer == user_id).scalar()
+        or 0
     )
     money_received = (
         Ledger.select(fn.Sum(Ledger.amount))
         .where(Ledger.beneficiary == user_id)
-        .scalar() or 0
+        .scalar()
+        or 0
     )
     return money_sent - money_received
 
@@ -168,10 +168,33 @@ def ledger_get_owed_by_user(user_id: int) -> List[Ledger]:
 
 
 def item_get_all():
-    """Get all items."""
     return Item.select().order_by(Item.name)
 
 
+def item_get_all_with_stock():
+    items = Item.select().order_by(Item.name)
+    stocks = [
+        ItemStock.select()
+        .where(ItemStock.item == item)
+        .order_by(ItemStock.logged_at.desc())
+        .first()
+        for item in items
+    ]
+    return zip(items, stocks)
+
+
 def item_get_by_id(item_id: int) -> Item:
-    """Get item by ID."""
     return Item.get_by_id(item_id)
+
+
+def item_add(
+    name: str,
+    icon: str,
+) -> Item:
+    item = Item.create(name=name, icon=icon, created_at=datetime.utcnow())
+    ItemStock.create(item=item, stock=0)
+    return item
+
+
+def item_stock_set_by_id(item_id: int, stock: int) -> Item:
+    return ItemStock.create(item=item_id, stock=stock)

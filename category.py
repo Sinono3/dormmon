@@ -2,7 +2,7 @@
 from flask import Response, render_template, request
 
 from database_access import (
-    category_create,
+    category_add,
     category_exists,
     category_get_all,
 )
@@ -35,7 +35,7 @@ def routes(app):
             return render_template('dialogs/error.html', error="Category already exists"), 400
     
         try:
-            category_create(name, icon)
+            category_add(name, icon)
         
             resp = render_template('dialogs/success.html', message=f'Category "{name}" added successfully!')
             resp = Response(resp)

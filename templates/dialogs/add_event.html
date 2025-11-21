@@ -56,6 +56,25 @@
         </div>
         
         <div class="form-group">
+            <label>
+                <input type="checkbox" id="enable_stock" hx-on:change="toggleStockFields()">
+                Set Item Stock
+            </label>
+            <div id="stock_fields" class="stock-fields" style="display:none;">
+                <label for="item_id">Item:</label>
+                <select id="item_id" name="item_id" disabled>
+                    <option value="">Select an item</option>
+                    {% for item in items %}
+                    <option value="{{ item.id }}">{{ item.icon }} {{ item.name }}</option>
+                    {% endfor %}
+                </select>
+                
+                <label for="stock">Stock:</label>
+                <input type="number" id="stock" name="stock" min="0" disabled>
+            </div>
+        </div>
+        
+        <div class="form-group">
             <label for="notes">Notes:</label>
             <textarea id="notes" name="notes"></textarea>
         </div>
@@ -93,6 +112,29 @@ function toggleCostFields() {
             cb.disabled = true;
             cb.checked = false;
         });
+    }
+}
+
+function toggleStockFields() {
+    const checkbox = document.getElementById('enable_stock');
+    const fields = document.getElementById('stock_fields');
+    const itemSelect = document.getElementById('item_id');
+    const stockInput = document.getElementById('stock');
+    
+    if (checkbox.checked) {
+        fields.style.display = 'block';
+        itemSelect.disabled = false;
+        itemSelect.required = true;
+        stockInput.disabled = false;
+        stockInput.required = true;
+    } else {
+        fields.style.display = 'none';
+        itemSelect.disabled = true;
+        itemSelect.required = false;
+        itemSelect.value = '';
+        stockInput.disabled = true;
+        stockInput.required = false;
+        stockInput.value = '';
     }
 }
 </script>

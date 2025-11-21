@@ -15,32 +15,56 @@
         <header>
             <h1>DormMon</h1>
         </header>
-        
-        <nav class="actions">
-            <button hx-get="/dialog/add_user" hx-target="#dialogs" hx-swap="innerHTML">
-                Add User
-            </button>
-            <button hx-get="/dialog/add_event" hx-target="#dialogs" hx-swap="innerHTML">
-                Add Event
-            </button>
-            <button hx-get="/dialog/add_category" hx-target="#dialogs" hx-swap="innerHTML">
-                Add Event Category
-            </button>
-            <button hx-get="/dialog/pay" hx-target="#dialogs" hx-swap="innerHTML">
-                Pay
-            </button>
-        </nav>
-        
+        <!-- <nav class="actions"> </nav> -->
+
         <div id="dialogs"></div>
         
         <main>
             <section>
                 <h2>Users</h2>
+                <nav class="actions">
+                    <button hx-get="/dialog/add_user" hx-target="#dialogs" hx-swap="innerHTML">
+                        Add User
+                    </button>
+                    <button hx-get="/dialog/pay" hx-target="#dialogs" hx-swap="innerHTML">
+                        Pay
+                    </button>
+                </nav>
                 <div id="users" hx-get="/users" hx-trigger="load, userUpdated from:body">
                     Loading...
                 </div>
             </section>
-            
+
+            <section>
+                <h2>Events</h2>
+                <nav class="actions">
+                    <button hx-get="/dialog/add_event" hx-target="#dialogs" hx-swap="innerHTML">
+                        Add Event
+                    </button>
+                    <button hx-get="/dialog/add_category" hx-target="#dialogs" hx-swap="innerHTML">
+                        Add Event Category
+                    </button>
+                </nav>
+                <div id="events" hx-get="/events" hx-trigger="load, eventUpdated from:body">
+                    Loading...
+                </div>
+            </section>
+
+            <section>
+                <h2>Item</h2>
+                <nav class="actions">
+                    <button hx-get="/dialog/add_item" hx-target="#dialogs" hx-swap="innerHTML">
+                        Add Item
+                    </button>
+                    <button hx-get="/dialog/set_stock" hx-target="#dialogs" hx-swap="innerHTML">
+                        Set Stock
+                    </button>
+                </nav>
+                <div id="items" hx-get="/items" hx-trigger="load, itemUpdated from:body">
+                    Loading...
+                </div>
+            </section>
+
             <!-- <section>
                 <h2>Categories</h2>
                 <div id="categories" hx-get="/categories" hx-trigger="load, categoryUpdated from:body">
@@ -48,12 +72,6 @@
                 </div>
             </section> -->
             
-            <section>
-                <h2>Events</h2>
-                <div id="events" hx-get="/events" hx-trigger="load, eventUpdated from:body">
-                    Loading...
-                </div>
-            </section>
         </main>
     </div>
 </body>

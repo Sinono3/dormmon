@@ -4,7 +4,7 @@ import os
 
 from database_access import (
     user_get_all,
-    user_create,
+    user_add,
     user_exists,
     ledger_get_all_balances,
 )
@@ -67,7 +67,7 @@ def routes(app):
             face_encoding_bytes = encode_face_to_bytes(avg_encoding)
         
             # Create user
-            user_create(name, face_encoding_bytes)
+            user_add(name, face_encoding_bytes)
         
             resp = render_template('dialogs/success.html', message=f'User "{name}" added successfully!')
             resp = Response(resp)

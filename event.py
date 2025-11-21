@@ -2,15 +2,18 @@ from flask import Response, render_template, request
 from werkzeug.utils import secure_filename
 import os
 
+from database import ItemStock
 from database_access import (
     user_get_all,
     user_get_by_id,
     category_get_all,
     category_get_by_id,
     event_get_recent,
-    event_create,
+    event_add,
     event_get_cost,
-    ledger_create,
+    ledger_add,
+    item_get_all,
+    item_get_by_id,
 )
 
 def routes(app):
@@ -31,7 +34,8 @@ def routes(app):
         """Show add event dialog."""
         users = user_get_all()
         categories = category_get_all()
-        return render_template('dialogs/add_event.html', users=users, categories=categories)
+        items = item_get_all()
+        return render_template('dialogs/add_event.html', users=users, categories=categories, items=items)
 
 
     @app.route("/events", methods=["POST"])
@@ -42,6 +46,8 @@ def routes(app):
         cost = request.form.get('cost')
         notes = request.form.get('notes', '')
         costsharers = request.form.getlist('costsharers')
+        item_id = request.form.get('item_id')
+        stock = request.form.get('stock')
     
         # Handle photo upload
         photo_file = request.files.get('photo')
@@ -58,6 +64,17 @@ def routes(app):
             photo_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             photo_file.save(photo_path)
         
+            # Handle stock
+            item_stock_id = None
+            if item_id and stock and stock.strip():
+                # Validate item exists
+                item = item_get_by_id(int(item_id))
+                stock_value = int(stock)
+                
+                # Create ItemStock record
+                item_stock = ItemStock.create(item=item, stock=stock_value)
+                item_stock_id = item_stock.id
+        
             # Handle cost
             sharer_ids = []
             if cost is not None:
@@ -70,7 +87,6 @@ def routes(app):
                     if payer.id not in sharer_ids:
                         sharer_ids.append(payer.id)  # Include payer
                 else:
-                    print("EVERYONE")
                     # All users share the cost
                     all_users = user_get_all()
                     sharer_ids = [u.id for u in all_users]
@@ -81,16 +97,17 @@ def routes(app):
                 
         
             # Create event
-            event = event_create(
+            event = event_add(
                 user_id=int(user_id),
                 category_id=int(category_id),
                 photo_path=photo_path,
-                notes=notes
+                notes=notes,
+                item_stock_id=item_stock_id
             )
         
             # Create ledger entries after event is inserted: payer pays for each sharer
             for sharer_id in sharer_ids:
-                ledger_create(
+                ledger_add(
                     event_id=event.id,
                     payer_id=payer.id,
                     beneficiary_id=sharer_id,

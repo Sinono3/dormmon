@@ -5,6 +5,7 @@ from flask import Flask, render_template
 
 import category
 import event
+import items
 import ledger
 import user
 from database_access import (
@@ -29,6 +30,7 @@ user.routes(app)
 category.routes(app)
 event.routes(app)
 ledger.routes(app)
+items.routes(app)
 
 if __name__ == "__main__":
     app.run(debug=True)

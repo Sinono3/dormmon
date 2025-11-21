@@ -1,0 +1,21 @@
+<table>
+    <thead>
+        <tr>
+            <th>Icon</th>
+            <th>Name</th>
+            <th>Stock</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item, stock in item_stock %}
+        <tr>
+            <td>{{ item.icon }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ stock.stock }}</td>
+            <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

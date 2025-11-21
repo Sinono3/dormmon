@@ -10,8 +10,8 @@
 - [x] Update on add
 - [-] Leaderboard
   - not a priority
-- [ ] Lint
-- [ ] Item stock table
+- [x] Lint
+- [x] Item stock reimplement
 - [ ] face encoding from DB -> webcam identify -> add event with taken picture
 - [ ] Better image and download handling. Adequate access.
 - [ ] Display images for events on event table button press

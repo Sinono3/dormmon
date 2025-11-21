@@ -3,7 +3,7 @@ from flask import Response, render_template, request
 from database_access import (
     user_get_all,
     user_get_by_id,
-    ledger_create,
+    ledger_add,
 )
 
 
@@ -55,7 +55,7 @@ def routes(app):
             user_get_by_id(to_user_id)
 
             # Create ledger entry (settlement - no event associated)
-            ledger_create(
+            ledger_add(
                 event_id=None,
                 payer_id=from_user_id,
                 beneficiary_id=to_user_id,
