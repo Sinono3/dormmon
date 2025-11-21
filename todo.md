@@ -12,6 +12,6 @@
   - not a priority
 - [x] Lint
 - [x] Item stock reimplement
-- [ ] face encoding from DB -> webcam identify -> add event with taken picture
-- [ ] Better image and download handling. Adequate access.
-- [ ] Display images for events on event table button press
+- [x] face encoding from DB -> webcam identify -> add event with taken picture
+- [x] Better image and download handling. Adequate access.
+- [x] Display images for events on event table button press

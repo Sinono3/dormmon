@@ -1,20 +1,24 @@
-from flask import Response, render_template, request
-from werkzeug.utils import secure_filename
 import os
+import uuid
+
+from flask import Response, render_template, request
+from PIL import Image
 
 from database import ItemStock
 from database_access import (
-    user_get_all,
-    user_get_by_id,
     category_get_all,
     category_get_by_id,
-    event_get_recent,
     event_add,
+    event_get_by_id,
     event_get_cost,
-    ledger_add,
+    event_get_recent,
     item_get_all,
     item_get_by_id,
+    ledger_add,
+    user_get_all,
+    user_get_by_id,
 )
+
 
 def routes(app):
     @app.route("/events")
@@ -60,10 +64,12 @@ def routes(app):
             category_get_by_id(int(category_id))
         
             # Save photo
-            filename = secure_filename(photo_file.filename)
+            filename = f"{uuid.uuid4()}.jpg"
             photo_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            photo_file.save(photo_path)
-        
+            img = Image.open(photo_file)
+            img = img.convert('RGB')
+            img.save(photo_path, 'JPEG', optimize=True, quality=70)        
+
             # Handle stock
             item_stock_id = None
             if item_id and stock and stock.strip():
@@ -100,7 +106,7 @@ def routes(app):
             event = event_add(
                 user_id=int(user_id),
                 category_id=int(category_id),
-                photo_path=photo_path,
+                photo_path=filename,
                 notes=notes,
                 item_stock_id=item_stock_id
             )
@@ -123,3 +129,9 @@ def routes(app):
             return render_template('dialogs/error.html', error=f"Invalid input: {str(e)}"), 400
         except Exception as e:
             return render_template('dialogs/error.html', error=f"Error: {str(e)}"), 400
+
+    @app.route("/dialog/eventpic/<int:event_id>")
+    def event_picture_view(event_id):
+        event = event_get_by_id(event_id)
+        return render_template('dialogs/picture.html', picture_filename=event.photo_path)
+

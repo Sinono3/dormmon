@@ -1,7 +1,6 @@
-"""Main Flask application."""
 import os
 
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 
 import category
 import event
@@ -23,8 +22,11 @@ database_init()
 
 @app.route("/")
 def index():
-    """Main page."""
     return render_template('base.html')
+
+@app.route('/uploads/<name>')
+def download_file(name):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], name)
 
 user.routes(app)
 category.routes(app)

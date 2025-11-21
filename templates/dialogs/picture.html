@@ -1,0 +1,6 @@
+<div class="dialog">
+    <h3>Picture</h3>
+    <img width="100%" src="{{ url_for('download_file', name=picture_filename) }}" />
+    <button hx-on:click="this.closest('.dialog').remove()">Close</button>
+</div>
+

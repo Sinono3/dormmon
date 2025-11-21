@@ -7,6 +7,7 @@
             <th>Cost shared among</th>
             <th>Notes</th>
             <th>Logged At</th>
+            <th>Picture</th>
         </tr>
     </thead>
     <tbody>
@@ -41,6 +42,15 @@
             </td>
             <td>{{ event.notes }}</td>
             <td>{{ event.logged_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                <button
+                    hx-get="/dialog/eventpic/{{ event.id }}"
+                    hx-target="#dialogs"
+                    hx-swap="innerHTML"
+                >
+                    View
+                </button>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
