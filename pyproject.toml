@@ -11,3 +11,8 @@ dependencies = [
     "peewee>=3.18.3",
     "tf-keras>=2.20.1",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.5",
+]

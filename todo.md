@@ -1,13 +1,17 @@
 - [x] Face recognition
 - [x] Database integration and schema
 - [x] Fix update tables
-- [ ] Update schema to support paying back
-  - [ ] Create "LedgerEntry", which can point to items bought.
-- [ ] Track bought items and calculate balance
-- [/] Remote web interface
-  - [ ] User list
-  - [ ] Category list
-  - [ ] Balance
-  - [ ] Item stock
-  - [ ] Update on add
-  - [ ] Leaderboard
+- [x] Update schema to support paying back
+  - [x] Create "LedgerEntry", which can point to items bought.
+- [x] Track bought items and calculate balance
+- [x] Remote web interface
+- [x] User list
+- [x] Balance
+- [x] Update on add
+- [-] Leaderboard
+  - not a priority
+- [ ] Lint
+- [ ] Item stock table
+- [ ] face encoding from DB -> webcam identify -> add event with taken picture
+- [ ] Better image and download handling. Adequate access.
+- [ ] Display images for events on event table button press

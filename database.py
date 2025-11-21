@@ -1,5 +1,15 @@
-from peewee import IntegerField, Model, SqliteDatabase, CharField, ForeignKeyField, TextField, BlobField, DateTimeField, DecimalField
 import datetime
+
+from peewee import (
+    BlobField,
+    CharField,
+    DateTimeField,
+    ForeignKeyField,
+    IntegerField,
+    Model,
+    SqliteDatabase,
+    TextField,
+)
 
 db = SqliteDatabase('my_database.db')
 
@@ -40,7 +50,7 @@ class Ledger(Model):
     event = ForeignKeyField(Event, backref='ledger_items', null=True, on_delete='CASCADE')
     payer = ForeignKeyField(User, backref='money_sent', on_delete='CASCADE')
     beneficiary = ForeignKeyField(User, backref='money_recv', on_delete='CASCADE')
-    amount = DecimalField(15, 2, null=True)
+    amount = IntegerField(null=True)
     created_at = DateTimeField(default=datetime.datetime.utcnow)
     
     class Meta:

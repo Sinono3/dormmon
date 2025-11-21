@@ -6,6 +6,7 @@ from database_access import (
     user_get_all,
     user_create,
     user_exists,
+    ledger_get_all_balances,
 )
 from face_encoding import (
     encode_face_from_image,
@@ -18,7 +19,8 @@ def routes(app):
     def user_list():
         """List all users."""
         users = user_get_all()
-        return render_template('users.html', users=users)
+        balances = ledger_get_all_balances()
+        return render_template('users.html', users=users, balances=balances)
 
 
     @app.route("/dialog/add_user")
@@ -80,6 +82,6 @@ def routes(app):
             for filepath in temp_files:
                 try:
                     os.remove(filepath)
-                except:
+                except NotImplementedError:
                     pass
 

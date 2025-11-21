@@ -10,28 +10,32 @@
         </tr>
     </thead>
     <tbody>
-        {% for event in events %}
+        {% for event, cost in events_with_cost %}
         <tr>
             <td>{{ event.user.name }}</td>
             <td>{{ event.category.icon }} {{ event.category.name }}</td>
             <td>
-                {% if event.cost %}
-                    ${{ "%.2f"|format(event.cost) }}
+                {% if cost %}
+                    ${{ "%.2f"|format(cost) }}
                 {% else %}
                     -
                 {% endif %}
             </td>
             <td>
-                <!-- FIX: {% if event.cost %}
-                    {% set shares = event.cost_shared_among %}
-                    {% if shares %}
-                        {% for share in shares %}
-                            {{ share.user.name }}{% if not loop.last %}, {% endif %}
+                {% if cost %}
+                    {% set ledger_items = event.ledger_items %}
+                    {% if ledger_items %}
+                        {% set seen_ids = [] %}
+                        {% for item in ledger_items %}
+                            {% if item.beneficiary.id not in seen_ids %}
+                                {% if seen_ids %}, {% endif %}{{ item.beneficiary.name }}
+                                {% set _ = seen_ids.append(item.beneficiary.id) %}
+                            {% endif %}
                         {% endfor %}
                     {% else %}
                         All
                     {% endif %}
-                {% else %} -->
+                {% else %}
                     -
                 {% endif %}
             </td>

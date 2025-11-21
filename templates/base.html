@@ -20,11 +20,14 @@
             <button hx-get="/dialog/add_user" hx-target="#dialogs" hx-swap="innerHTML">
                 Add User
             </button>
-            <button hx-get="/dialog/add_category" hx-target="#dialogs" hx-swap="innerHTML">
-                Add Category
-            </button>
             <button hx-get="/dialog/add_event" hx-target="#dialogs" hx-swap="innerHTML">
                 Add Event
+            </button>
+            <button hx-get="/dialog/add_category" hx-target="#dialogs" hx-swap="innerHTML">
+                Add Event Category
+            </button>
+            <button hx-get="/dialog/pay" hx-target="#dialogs" hx-swap="innerHTML">
+                Pay
             </button>
         </nav>
         
@@ -38,12 +41,12 @@
                 </div>
             </section>
             
-            <section>
+            <!-- <section>
                 <h2>Categories</h2>
                 <div id="categories" hx-get="/categories" hx-trigger="load, categoryUpdated from:body">
                     Loading...
                 </div>
-            </section>
+            </section> -->
             
             <section>
                 <h2>Events</h2>

@@ -1,0 +1,56 @@
+<div class="dialog">
+    <h3>Pay</h3>
+    <form 
+        hx-post="/ledger/pay" 
+        hx-target="#dialogs" 
+        hx-target-4xx="#dialogs" 
+        hx-swap="innerHTML"
+    >
+        <div class="form-group">
+            <label for="from_user_id">From (Payer):</label>
+            <select id="from_user_id" name="from_user_id" required>
+                {% if from_user_id %}
+                    <option value="{{ from_user_id }}" selected>{{ from_user_name }}</option>
+                {% else %}
+                    <option value="">-- Select User --</option>
+                {% endif %}
+                {% for user in users %}
+                    {% if not from_user_id or user.id != from_user_id %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="to_user_id">To (Beneficiary):</label>
+            <select id="to_user_id" name="to_user_id" required>
+                {% if to_user_id %}
+                    <option value="{{ to_user_id }}" selected>{{ to_user_name }}</option>
+                {% else %}
+                    <option value="">-- Select User --</option>
+                {% endif %}
+                {% for user in users %}
+                    {% if not to_user_id or user.id != to_user_id %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="amount">Amount:</label>
+            <input type="number" step="0.01" id="amount" name="amount" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">Notes (optional):</label>
+            <textarea id="notes" name="notes"></textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit">Record Payment</button>
+            <button type="button" hx-on:click="this.closest('.dialog').remove()">Cancel</button>
+        </div>
+    </form>
+</div>

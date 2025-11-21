@@ -1,9 +1,11 @@
 """Database access layer - all database queries and operations."""
 
-from database import db, User, Item, ItemStock, EventCategory, Event, Ledger
 from datetime import datetime
-from decimal import Decimal
-from typing import Optional, List
+from typing import List, Optional
+
+from peewee import fn
+
+from database import Event, EventCategory, Item, ItemStock, Ledger, User, db
 
 
 def database_init():
@@ -72,7 +74,6 @@ def event_create(
     user_id: int,
     category_id: int,
     photo_path: str,
-    cost: Optional[Decimal] = None,
     notes: str = "",
     item_stock_id: Optional[int] = None,
 ) -> Event:
@@ -81,7 +82,6 @@ def event_create(
         user=user_id,
         category=category_id,
         photo_path=photo_path,
-        cost=cost,
         notes=notes,
         stock=item_stock_id,
         logged_at=datetime.utcnow(),
@@ -89,15 +89,82 @@ def event_create(
     )
 
 
-# def event_cost_share_add(event_id: int, user_ids: List[int]):
-#     """Add cost shares for an event."""
-#     for user_id in user_ids:
-#         EventCostShare.create(event=event_id, user=user_id)
+def event_get_cost(event_id: int) -> Optional[int]:
+    """Get the total cost of an event from ledger entries."""
+    # Sum all ledger entries for this event (each entry is a portion of the total)
+    # We can sum all entries or just the self-reference ones - both should give the same total
+    total = (
+        Ledger.select(fn.Sum(Ledger.amount))
+        .where(Ledger.event == event_id)
+        # .where(Ledger.payer == Ledger.beneficiary)  # Self-reference entries represent the total
+        .scalar()
+    )
+    return total if total else None
 
 
-# def event_cost_share_get(event_id: int):
-#     """Get all users who share the cost of an event."""
-#     return User.select().join(EventCostShare).where(EventCostShare.event == event_id)
+# Ledger operations
+def ledger_create(
+    event_id: Optional[int],
+    payer_id: int,
+    beneficiary_id: int,
+    amount: int,
+) -> Ledger:
+    """Create a ledger entry."""
+    return Ledger.create(
+        event=event_id,
+        payer=payer_id,
+        beneficiary=beneficiary_id,
+        amount=amount,
+        created_at=datetime.utcnow(),
+    )
+
+
+def ledger_get_balance(user_id: int) -> int:
+    """
+    Get the net balance for a user.
+    Positive = user is owed money (others owe them)
+    Negative = user owes money (they owe others)
+    """
+    money_sent = (
+        Ledger.select(fn.Sum(Ledger.amount))
+        .where(Ledger.payer == user_id)
+        .scalar() or 0
+    )
+    money_received = (
+        Ledger.select(fn.Sum(Ledger.amount))
+        .where(Ledger.beneficiary == user_id)
+        .scalar() or 0
+    )
+    return money_sent - money_received
+
+
+def ledger_get_all_balances() -> dict:
+    """Get balances for all users. Returns dict mapping user_id to balance."""
+    users = User.select()
+    balances = {}
+    for user in users:
+        balances[user.id] = ledger_get_balance(user.id)
+    return balances
+
+
+def ledger_get_owed_to_user(user_id: int) -> List[Ledger]:
+    """Get all ledger entries where user is owed money."""
+    return (
+        Ledger.select()
+        .where(Ledger.payer == user_id)
+        .where(Ledger.beneficiary != user_id)
+        .order_by(Ledger.created_at.desc())
+    )
+
+
+def ledger_get_owed_by_user(user_id: int) -> List[Ledger]:
+    """Get all ledger entries where user owes money."""
+    return (
+        Ledger.select()
+        .where(Ledger.payer != user_id)
+        .where(Ledger.beneficiary == user_id)
+        .order_by(Ledger.created_at.desc())
+    )
 
 
 def item_get_all():

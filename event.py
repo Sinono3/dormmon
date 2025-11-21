@@ -1,7 +1,6 @@
 from flask import Response, render_template, request
 from werkzeug.utils import secure_filename
 import os
-from decimal import Decimal
 
 from database_access import (
     user_get_all,
@@ -10,6 +9,8 @@ from database_access import (
     category_get_by_id,
     event_get_recent,
     event_create,
+    event_get_cost,
+    ledger_create,
 )
 
 def routes(app):
@@ -17,7 +18,12 @@ def routes(app):
     def event_list():
         """List recent events."""
         events = event_get_recent()
-        return render_template('events.html', events=events)
+        # Calculate cost for each event from ledger entries
+        events_with_cost = []
+        for event in events:
+            cost = event_get_cost(event.id)
+            events_with_cost.append((event, cost))
+        return render_template('events.html', events_with_cost=events_with_cost)
 
 
     @app.route("/dialog/add_event")
@@ -33,10 +39,9 @@ def routes(app):
         """Handle event creation."""
         user_id = request.form.get('user_id')
         category_id = request.form.get('category_id')
-        cost_str = request.form.get('cost')
+        cost = request.form.get('cost')
         notes = request.form.get('notes', '')
-        # FIX:
-        # costsharers = request.form.getlist('costsharers')
+        costsharers = request.form.getlist('costsharers')
     
         # Handle photo upload
         photo_file = request.files.get('photo')
@@ -45,7 +50,7 @@ def routes(app):
     
         try:
             # Validate user and category exist
-            user_get_by_id(int(user_id))
+            payer = user_get_by_id(int(user_id))
             category_get_by_id(int(category_id))
         
             # Save photo
@@ -54,31 +59,47 @@ def routes(app):
             photo_file.save(photo_path)
         
             # Handle cost
-            cost = None
-            if cost_str:
-                try:
-                    cost = Decimal(cost_str)
-                except:
-                    return render_template('dialogs/error.html', error="Invalid cost value"), 400
+            sharer_ids = []
+            if cost is not None:
+                cost = int(cost)
+
+                # Determine who shares the cost
+                if costsharers:
+                    # Only selected users share the cost
+                    sharer_ids = [int(cs) for cs in costsharers]
+                    if payer.id not in sharer_ids:
+                        sharer_ids.append(payer.id)  # Include payer
+                else:
+                    print("EVERYONE")
+                    # All users share the cost
+                    all_users = user_get_all()
+                    sharer_ids = [u.id for u in all_users]
+                
+                # Calculate amount per person
+                num_sharers = len(sharer_ids)
+                amount_per_person = round(cost / num_sharers)
+                
         
             # Create event
             event = event_create(
                 user_id=int(user_id),
                 category_id=int(category_id),
                 photo_path=photo_path,
-                cost=cost,
                 notes=notes
             )
         
-            # FIX:
-            # # Add cost shares if cost is set and costsharers are specified
-            # if cost is not None and costsharers:
-            #     costsharers_ids = [int(cs) for cs in costsharers]
-            #     event_cost_share_get(event.id, costsharers_ids)
+            # Create ledger entries after event is inserted: payer pays for each sharer
+            for sharer_id in sharer_ids:
+                ledger_create(
+                    event_id=event.id,
+                    payer_id=payer.id,
+                    beneficiary_id=sharer_id,
+                    amount=amount_per_person,
+                )
         
             resp = render_template('dialogs/success.html', message='Event added successfully!')
             resp = Response(resp)
-            resp.headers['HX-Trigger'] = 'eventUpdated'
+            resp.headers['HX-Trigger'] = 'eventUpdated, userUpdated'
             return resp
     
         except ValueError as e:
