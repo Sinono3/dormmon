@@ -1,5 +1,13 @@
 - [x] Face recognition
 - [x] Database integration and schema
-- [ ] Design Remote web interface
+- [x] Fix update tables
+- [ ] Update schema to support paying back
+  - [ ] Create "LedgerEntry", which can point to items bought.
+- [ ] Track bought items and calculate balance
 - [/] Remote web interface
-- [ ] Track bought items and balance
+  - [ ] User list
+  - [ ] Category list
+  - [ ] Balance
+  - [ ] Item stock
+  - [ ] Update on add
+  - [ ] Leaderboard

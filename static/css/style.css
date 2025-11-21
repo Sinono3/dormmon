@@ -153,11 +153,11 @@ tr:nth-child(even) {
     border-radius: 4px;
 }
 
-.benefactors-section {
+.costsharers-section {
     margin-top: 15px;
 }
 
-.benefactors-list {
+.costsharers-list {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;

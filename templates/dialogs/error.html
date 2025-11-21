@@ -1,5 +1,5 @@
 <div class="dialog error">
     <p>{{ error }}</p>
-    <button onclick="this.closest('.dialog').remove()">Close</button>
+    <button hx-on:click="this.closest('.dialog').remove()">Close</button>
 </div>
 

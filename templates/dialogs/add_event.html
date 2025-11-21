@@ -4,8 +4,8 @@
         hx-post="/events" 
         hx-encoding="multipart/form-data" 
         hx-target="#dialogs" 
+        hx-target-4xx="#dialogs" 
         hx-swap="innerHTML"
-        hx-on::after-request="htmx.trigger(document.body, 'eventUpdated')"
     >
         <div class="form-group">
             <label for="user_id">User:</label>
@@ -27,23 +27,23 @@
         
         <div class="form-group">
             <label>
-                <input type="checkbox" id="enable_cost" onchange="toggleCostFields()">
+                <input type="checkbox" id="enable_cost" hx-on:change="toggleCostFields()">
                 Include Cost
             </label>
             <div id="cost_fields" class="cost-fields" style="display:none;">
                 <label for="cost">Cost:</label>
                 <input type="number" step="0.01" id="cost" name="cost" disabled>
                 
-                <div class="benefactors-section">
+                <div class="costsharers-section">
                     <label>Cost shared among:</label>
-                    <div class="benefactors-list">
+                    <div class="costsharers-list">
                         {% for user in users %}
                         <label class="checkbox-label">
                             <input 
                                 type="checkbox" 
-                                name="benefactors" 
+                                name="costsharers" 
                                 value="{{ user.id }}"
-                                class="benefactor-checkbox"
+                                class="costsharer-checkbox"
                                 disabled
                             >
                             {{ user.name }}
@@ -67,7 +67,7 @@
         
         <div class="form-actions">
             <button type="submit">Add Event</button>
-            <button type="button" onclick="this.closest('.dialog').remove()">Cancel</button>
+            <button type="button" hx-on:click="this.closest('.dialog').remove()">Cancel</button>
         </div>
     </form>
 </div>
@@ -77,19 +77,19 @@ function toggleCostFields() {
     const checkbox = document.getElementById('enable_cost');
     const fields = document.getElementById('cost_fields');
     const costInput = document.getElementById('cost');
-    const benefactorCheckboxes = document.querySelectorAll('.benefactor-checkbox');
+    const costsharerCheckboxes = document.querySelectorAll('.costsharer-checkbox');
     
     if (checkbox.checked) {
         fields.style.display = 'block';
         costInput.disabled = false;
         costInput.required = true;
-        benefactorCheckboxes.forEach(cb => cb.disabled = false);
+        costsharerCheckboxes.forEach(cb => cb.disabled = false);
     } else {
         fields.style.display = 'none';
         costInput.disabled = true;
         costInput.required = false;
         costInput.value = '';
-        benefactorCheckboxes.forEach(cb => {
+        costsharerCheckboxes.forEach(cb => {
             cb.disabled = true;
             cb.checked = false;
         });

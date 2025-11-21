@@ -1,5 +1,5 @@
 """Main Flask application."""
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, Response, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
 from decimal import Decimal
@@ -27,6 +27,7 @@ from face_encoding import (
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize database on startup
@@ -93,7 +94,10 @@ def handle_create_user():
         # Create user
         create_user(name, face_encoding_bytes)
         
-        return render_template('dialogs/success.html', message=f'User "{name}" added successfully!')
+        resp = render_template('dialogs/success.html', message=f'User "{name}" added successfully!')
+        resp = Response(resp)
+        resp.headers['HX-Trigger'] = 'userUpdated'
+        return resp
     
     except Exception as e:
         return render_template('dialogs/error.html', error=f"Error: {str(e)}"), 400
@@ -135,7 +139,11 @@ def handle_create_category():
     
     try:
         create_category(name, icon)
-        return render_template('dialogs/success.html', message=f'Category "{name}" added successfully!')
+        
+        resp = render_template('dialogs/success.html', message=f'Category "{name}" added successfully!')
+        resp = Response(resp)
+        resp.headers['HX-Trigger'] = 'categoryUpdated'
+        return resp
     except Exception as e:
         return render_template('dialogs/error.html', error=f"Error: {str(e)}"), 400
 
@@ -163,7 +171,7 @@ def handle_create_event():
     category_id = request.form.get('category_id')
     cost_str = request.form.get('cost')
     notes = request.form.get('notes', '')
-    benefactors = request.form.getlist('benefactors')
+    costsharers = request.form.getlist('costsharers')
     
     # Handle photo upload
     photo_file = request.files.get('photo')
@@ -197,12 +205,15 @@ def handle_create_event():
             notes=notes
         )
         
-        # Add cost shares if cost is set and benefactors are specified
-        if cost is not None and benefactors:
-            benefactor_ids = [int(b) for b in benefactors]
-            add_event_cost_shares(event.id, benefactor_ids)
+        # Add cost shares if cost is set and costsharers are specified
+        if cost is not None and costsharers:
+            costsharers_ids = [int(cs) for cs in costsharers]
+            add_event_cost_shares(event.id, costsharers_ids)
         
-        return render_template('dialogs/success.html', message='Event added successfully!')
+        resp = render_template('dialogs/success.html', message='Event added successfully!')
+        resp = Response(resp)
+        resp.headers['HX-Trigger'] = 'eventUpdated'
+        return resp
     
     except ValueError as e:
         return render_template('dialogs/error.html', error=f"Invalid input: {str(e)}"), 400

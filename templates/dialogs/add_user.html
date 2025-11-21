@@ -4,9 +4,10 @@
         hx-post="/users" 
         hx-encoding="multipart/form-data" 
         hx-target="#dialogs" 
+        hx-target-4xx="#dialogs" 
         hx-swap="innerHTML"
-        hx-on::after-request="htmx.trigger(document.body, 'userUpdated')"
     >
+        <!-- hx-on::after-request="htmx.trigger('body', 'userUpdated')" -->
         <div class="form-group">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required>
@@ -17,7 +18,10 @@
         </div>
         <div class="form-actions">
             <button type="submit">Add User</button>
-            <button type="button" onclick="this.closest('.dialog').remove()">Cancel</button>
+            <button type="button" hx-on:click="this.closest('.dialog').remove()">Cancel</button>
+        </div>
+        <div class="htmx-indicator">
+            Please wait...
         </div>
     </form>
 </div>
