@@ -1,26 +1,54 @@
 import datetime
-from database import db, User, Item, ItemStock, EventCategory 
+from pathlib import Path
+
+from database import Event, EventCategory, Item, ItemStock, User, db
+from database_access import database_init
+from face_encoding import (
+    average_encodings,
+    encode_face_from_image,
+    encode_face_to_bytes,
+)
 
 # Open database and create tables (if they don't exist)
-db.connect()
-# db.create_tables([User, Item, ItemStock, EventCategory, Event, EventCostShare])
+database_init()
+
+def load_face_encs(dir_path):
+    dir_path = Path(dir_path)
+    paths = [subp for subp in dir_path.iterdir()]
+    encs = [encode_face_from_image(p) for p in paths]
+    encs = average_encodings(encs)
+    encs_bytes = encode_face_to_bytes(encs)
+    return encs_bytes
+
 
 # Add example users (if they don't exist)
 user_maia, _ = User.get_or_create(
-    name='Maia',
-    defaults={'face_encoding': b"", 'created_at': datetime.datetime.utcnow()}
+    name="Maia",
+    defaults={
+        "face_encoding": load_face_encs("database/maia"),
+        "created_at": datetime.datetime.utcnow(),
+    },
 )
 user_jaz, _ = User.get_or_create(
     name='Jaz',
-    defaults={'face_encoding': b"", 'created_at': datetime.datetime.utcnow()}
+    defaults={
+        "face_encoding": load_face_encs("database/jaz"),
+        "created_at": datetime.datetime.utcnow(),
+    },
 )
 user_simon, _ = User.get_or_create(
     name='Simon',
-    defaults={'face_encoding': b"", 'created_at': datetime.datetime.utcnow()}
+    defaults={
+        "face_encoding": load_face_encs("database/simon"),
+        "created_at": datetime.datetime.utcnow(),
+    },
 )
 user_aldo, _ = User.get_or_create(
     name='Aldo',
-    defaults={'face_encoding': b"", 'created_at': datetime.datetime.utcnow()}
+    defaults={
+        "face_encoding": load_face_encs("database/aldo"),
+        "created_at": datetime.datetime.utcnow(),
+    },
 )
 
 # Add example categories (if they don't exist)
@@ -71,13 +99,13 @@ ItemStock.create(item=item_toilet_paper, stock=0, logged_at=datetime.datetime.ut
 # # 3. insert a "bought toilet paper"⁠event. this should set the "toilet paper" item stock to 1.
 # stock_entry = ItemStock.create(
 #     item=item_toilet_paper,
-#     stock=1
+#     stock=5
 # )
 # event = Event.create(
 #     user=user_aldo,
 #     category=category_purchases,
 #     photo_path="",
-#     cost=500,
+#     # cost=500,
 #     notes="Bought toilet paper",
 #     stock=stock_entry
 # )
