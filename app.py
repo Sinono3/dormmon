@@ -11,7 +11,7 @@ import tasks
 from database_access import (
     database_init,
 )
-
+#hola
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
