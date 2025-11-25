@@ -16,6 +16,9 @@
 - [x] Better image and download handling. Adequate access.
 - [x] Display images for events on event table button press
 - [x] Upload picture in `face_add_event.py`
+- [ ] MaiaUI integration
+  - [ ] use database for information and insertion
+  - [ ] face recognition integrate
 - [ ] Stop using direct DB calls in `face_add_event.py`. Use API instead. (<- should this be done though?)
 - [ ] Refactor refactor refactor
 - [ ] Integrate with other parts of the group

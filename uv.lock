@@ -223,6 +223,7 @@ dependencies = [
     { name = "opencv-python" },
     { name = "peewee" },
     { name = "tf-keras" },
+    { name = "ttkbootstrap" },
 ]
 
 [package.dev-dependencies]
@@ -238,6 +239,7 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=4.11.0.86" },
     { name = "peewee", specifier = ">=3.18.3" },
     { name = "tf-keras", specifier = ">=2.20.1" },
+    { name = "ttkbootstrap", specifier = ">=1.19.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1515,6 +1517,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737, upload-time = "2024-11-24T20:12:22.481Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d0/30/dc54f88dd4a2b5dc8a0279bdd7270e735851848b762aeb1c1184ed1f6b14/tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2", size = 78540, upload-time = "2024-11-24T20:12:19.698Z" },
+]
+
+[[package]]
+name = "ttkbootstrap"
+version = "1.19.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pillow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0b/ef/02e2f9de8a9636a24d0dbfc20373727b1e8c4f41568ee8e5962e0be4fb0c/ttkbootstrap-1.19.0.tar.gz", hash = "sha256:47baea05701e3308eb240b7c8da923ddf27db499b32028119ecdab0e94b2dedc", size = 173417, upload-time = "2025-11-14T13:08:24.498Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/40/451ac2622eccce7e85e1a6b01ac37a3347c20debf067c609f3a313027e85/ttkbootstrap-1.19.0-py3-none-any.whl", hash = "sha256:ba2f434a23abeb5dd074242ea6c5174bf1b927f2b08755711c05bf9bce56addd", size = 189939, upload-time = "2025-11-14T13:08:23.361Z" },
 ]
 
 [[package]]
