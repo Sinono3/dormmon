@@ -21,6 +21,18 @@
         
         <main>
             <section>
+                <h2>House Tasks</h2>
+                <nav class="actions">
+                    <button hx-get="/status_view" hx-target="#dialogs" hx-swap="innerHTML">
+                        Task Status
+                    </button>
+                    <button hx-get="/schedule" hx-target="#dialogs" hx-swap="innerHTML">
+                        Cleaning Schedule
+                    </button>
+                </nav>
+            </section>
+
+            <section>
                 <h2>Users</h2>
                 <nav class="actions">
                     <button hx-get="/dialog/add_user" hx-target="#dialogs" hx-swap="innerHTML">

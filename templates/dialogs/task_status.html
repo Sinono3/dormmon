@@ -1,0 +1,21 @@
+<div class="dialog">
+    <h2>📊 Current Task Status</h2>
+    <div class="status-cards">
+        <div class="status-card">
+            <div class="status-icon">{{ cleaning_status.icon }}</div>
+            <div>
+                <strong>{{ cleaning_status.name }}</strong><br>
+                {{ cleaning_status.message }}
+            </div>
+        </div>
+        <div class="status-card">
+            <div class="status-icon">{{ trash_status.icon }}</div>
+            <div>
+                <strong>{{ trash_status.name }}</strong><br>
+                {{ trash_status.message }}
+            </div>
+        </div>
+    </div>
+    <button onclick="this.closest('.dialog').remove()">Close</button>
+</div>
+

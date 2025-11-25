@@ -7,10 +7,11 @@ import event
 import items
 import ledger
 import user
+import tasks
 from database_access import (
     database_init,
 )
-#asdf
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -33,6 +34,7 @@ category.routes(app)
 event.routes(app)
 ledger.routes(app)
 items.routes(app)
+tasks.routes(app)
 
 if __name__ == "__main__":
     app.run(debug=True)

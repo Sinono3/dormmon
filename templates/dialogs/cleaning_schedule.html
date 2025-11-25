@@ -1,0 +1,26 @@
+<div class="dialog">
+    <h2>🧹 Weekly Cleaning Schedule</h2>
+    {% if schedule %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Assigned User</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in schedule %}
+                    <tr>
+                        <td>{{ entry.date }}</td>
+                        <td>{{ entry.user }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="note">Rotation advances every Saturday at noon.</p>
+    {% else %}
+        <p>Add users to start the cleaning rotation.</p>
+    {% endif %}
+    <button onclick="this.closest('.dialog').remove()">Close</button>
+</div>
+

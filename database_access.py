@@ -64,6 +64,11 @@ def category_exists(name: str) -> bool:
     return EventCategory.select().where(EventCategory.name == name).exists()
 
 
+def category_get_by_name(name: str) -> Optional[EventCategory]:
+    """Get a category by name if it exists."""
+    return EventCategory.get_or_none(EventCategory.name == name)
+
+
 # Event operations
 def event_get_recent(limit: int = 50):
     """Get recent events."""
@@ -89,6 +94,31 @@ def event_add(
         stock=item_stock_id,
         logged_at=datetime.utcnow(),
         modified_at=datetime.utcnow(),
+    )
+
+
+def event_get_latest_by_category(category: EventCategory) -> Optional[Event]:
+    """Return the latest event for a category."""
+    return (
+        Event.select()
+        .where(Event.category == category)
+        .order_by(Event.logged_at.desc())
+        .first()
+    )
+
+
+def event_user_has_category_entry_since(
+    user_id: int, category: EventCategory, since: datetime
+) -> bool:
+    """Check whether a user has logged an event in a category since a given datetime."""
+    return (
+        Event.select()
+        .where(
+            (Event.category == category)
+            & (Event.user == user_id)
+            & (Event.logged_at >= since)
+        )
+        .exists()
     )
 
 
