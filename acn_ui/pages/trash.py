@@ -1,6 +1,8 @@
-from datetime import datetime
 import tkinter as tk
+from datetime import datetime
+
 import ttkbootstrap as ttk
+
 
 # *================ TRASH PAGE =====================*
 class TrashPage(ttk.Frame):
