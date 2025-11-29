@@ -75,7 +75,7 @@ def event_get_recent(limit: int = 50):
     return Event.select().order_by(Event.logged_at.desc()).limit(limit)
 
 def event_get_by_id(id: int) -> Event:
-    return Event.get_by_id(Event.id == id)
+    return Event.get_by_id(id)
 
 
 def event_add(
