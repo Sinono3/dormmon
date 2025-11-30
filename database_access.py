@@ -1,6 +1,7 @@
 """Database access layer - all database queries and operations."""
 
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
 from peewee import fn
@@ -13,11 +14,76 @@ def database_init():
     db.connect()
     db.create_tables([User, Item, ItemStock, EventCategory, Event, Ledger])
 
-    # Create default category if not exists
-    EventCategory.get_or_create(
-        name="Default", defaults={"icon": "📋", "created_at": datetime.utcnow()}
+    def load_face_encs(dir_path):
+        from face_encoding import (
+            average_encodings,
+            encode_face_from_image,
+            encode_face_to_bytes,
+        )
+        dir_path = Path(dir_path)
+        paths = [subp for subp in dir_path.iterdir()]
+        encs = [encode_face_from_image(p) for p in paths]
+        encs = average_encodings(encs)
+        encs_bytes = encode_face_to_bytes(encs)
+        return encs_bytes
+
+    user_maia, _ = User.get_or_create(
+        name="Maia",
+        defaults={
+            "face_encoding": load_face_encs("database/maia"),
+            "created_at": datetime.utcnow(),
+        },
+    )
+    user_jaz, _ = User.get_or_create(
+        name='Jaz',
+        defaults={
+            "face_encoding": load_face_encs("database/jaz"),
+            "created_at": datetime.utcnow(),
+        },
+    )
+    user_simon, _ = User.get_or_create(
+        name='Simon',
+        defaults={
+            "face_encoding": load_face_encs("database/simon"),
+            "created_at": datetime.utcnow(),
+        },
+    )
+    user_aldo, _ = User.get_or_create(
+        name='Aldo',
+        defaults={
+            "face_encoding": load_face_encs("database/aldo"),
+            "created_at": datetime.utcnow(),
+        },
     )
 
+    # Add example categories (if they don't exist)
+    category_default, _ = EventCategory.get_or_create(
+        name='Default',
+        defaults={'icon': '📋', 'created_at': datetime.utcnow()}
+    )
+    category_trash, _ = EventCategory.get_or_create(
+        name='Trash',
+        defaults={'icon': '🗑️', 'created_at': datetime.utcnow()}
+    )
+    category_power, _ = EventCategory.get_or_create(
+        name='Power',
+        defaults={'icon': '⚡️', 'created_at': datetime.utcnow()}
+    )
+    category_purchases, _ = EventCategory.get_or_create(
+        name='Purchases',
+        defaults={'icon': '🛍️', 'created_at': datetime.utcnow()}
+    )
+    category_default, _ = EventCategory.get_or_create(
+        name='Room Cleaning',
+        defaults={'icon': '🧹', 'created_at': datetime.utcnow()}
+    )
+
+    # Add example items (if they don't exist)
+    item_toilet_paper, _ = Item.get_or_create(
+        name='Toilet paper',
+        defaults={'icon': '🧻', 'created_at': datetime.utcnow()}
+    )
+    # ItemStock.create(item=item_toilet_paper, stock=0, logged_at=datetime.utcnow())
     db.close()
 
 
@@ -70,9 +136,24 @@ def category_get_by_name(name: str) -> Optional[EventCategory]:
 
 
 # Event operations
-def event_get_recent(limit: int = 50):
-    """Get recent events."""
-    return Event.select().order_by(Event.logged_at.desc()).limit(limit)
+def event_get_recent(
+    limit: int = 50,
+    category_id: Optional[int] = None,
+    category_name: Optional[str] = None,
+):
+    """Get recent events, optionally filtered by category."""
+    query = Event.select().order_by(Event.logged_at.desc())
+
+    if category_id is not None:
+        query = query.where(Event.category == category_id)
+    elif category_name:
+        query = (
+            query.join(EventCategory)
+            .where(EventCategory.name == category_name)
+            .switch(Event)
+        )
+
+    return query.limit(limit)
 
 def event_get_by_id(id: int) -> Event:
     return Event.get_by_id(id)

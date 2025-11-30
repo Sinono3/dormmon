@@ -22,55 +22,7 @@ def load_face_encs(dir_path):
 
 
 # Add example users (if they don't exist)
-user_maia, _ = User.get_or_create(
-    name="Maia",
-    defaults={
-        "face_encoding": load_face_encs("database/maia"),
-        "created_at": datetime.datetime.utcnow(),
-    },
-)
-user_jaz, _ = User.get_or_create(
-    name='Jaz',
-    defaults={
-        "face_encoding": load_face_encs("database/jaz"),
-        "created_at": datetime.datetime.utcnow(),
-    },
-)
-user_simon, _ = User.get_or_create(
-    name='Simon',
-    defaults={
-        "face_encoding": load_face_encs("database/simon"),
-        "created_at": datetime.datetime.utcnow(),
-    },
-)
-user_aldo, _ = User.get_or_create(
-    name='Aldo',
-    defaults={
-        "face_encoding": load_face_encs("database/aldo"),
-        "created_at": datetime.datetime.utcnow(),
-    },
-)
 
-# Add example categories (if they don't exist)
-category_trash, _ = EventCategory.get_or_create(
-    name='Trash',
-    defaults={'icon': '🗑️', 'created_at': datetime.datetime.utcnow()}
-)
-category_power, _ = EventCategory.get_or_create(
-    name='Power',
-    defaults={'icon': '⚡️', 'created_at': datetime.datetime.utcnow()}
-)
-category_purchases, _ = EventCategory.get_or_create(
-    name='Purchases',
-    defaults={'icon': '🛍️', 'created_at': datetime.datetime.utcnow()}
-)
-
-# Add example items (if they don't exist)
-item_toilet_paper, _ = Item.get_or_create(
-    name='Toilet paper',
-    defaults={'icon': '🧻', 'created_at': datetime.datetime.utcnow()}
-)
-ItemStock.create(item=item_toilet_paper, stock=0, logged_at=datetime.datetime.utcnow())
 
 # # Four examples:
 # # 1. insert a "took the trash out" event

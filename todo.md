@@ -17,10 +17,10 @@
 - [x] Display images for events on event table button press
 - [x] Upload picture in `face_add_event.py`
 - [x] fix picture dialog bug
-- [ ] MaiaUI integration
-  - [ ] answer in JSON when requested
-  - [ ] face recognition integrate
-  - [ ] use database for information and insertion
-- [ ] Stop using direct DB calls in `face_add_event.py`. Use API instead. (<- should this be done though?)
+- [x] MaiaUI integration
+  - [x] answer in JSON when requested
+  - [x] face recognition integrate
+  - [x] use database for information and insertion
+- [x] Stop using direct DB calls in `face_add_event.py`. Use API instead. (<- should this be done though?)
 - [ ] Refactor refactor refactor
 - [ ] sound check
