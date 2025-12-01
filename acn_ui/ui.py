@@ -12,6 +12,7 @@ from pages.balance import BalancePage
 from pages.trash import TrashPage
 from pages.expense import ExpensePage
 from pages.cleanroom import CleanroomPage
+from pages.noise_alert import NoiseAlertPage
 
 class UI(ttk.Window):
   def __init__(self):
@@ -51,7 +52,8 @@ class UI(ttk.Window):
       "balance": BalancePage,
       "trash": TrashPage,
       "expense": ExpensePage,
-      "cleanroom": CleanroomPage
+      "cleanroom": CleanroomPage,
+      "noise_alert": NoiseAlertPage
     }
     
     for page_name, PageClass in page_mapping.items():
