@@ -78,6 +78,11 @@ class UI(ttk.Window):
     imgBack = imgBack.resize((15, 15))
     self.backIm = ImageTk.PhotoImage(imgBack)
 
+    imgMenu = Image.open("icons/dots.png")
+    imgMenu = imgMenu.resize((15, 15))
+    self.menuIm = ImageTk.PhotoImage(imgMenu)
+
+
   def show_frame(self, page_name):
     current = getattr(self, "current_page", None)
     
