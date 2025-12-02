@@ -4,3 +4,19 @@ __pycache__
 *.db
 /database
 /uploads
+
+# uv lock file
+#.venv.lock
+
+# Logs
+*.log
+
+# Ignore everything inside images/
+images/*
+
+# Keep the folder itself (optional)
+!images/.gitkeep
+
+# Face database — keep folder, ignore contents
+database/*
+!database/.gitkeep

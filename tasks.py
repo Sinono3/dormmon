@@ -9,6 +9,7 @@ from database_access import (
     event_user_has_category_entry_since,
     user_get_all,
 )
+from response_helpers import json_response, wants_json_response
 
 TRASH_CATEGORY_NAME = "Trash"
 CLEANING_CATEGORY_NAME = "Room Cleaning"
@@ -20,6 +21,10 @@ def routes(app):
     @app.route("/status_view")
     def status_view():
         status = _get_task_status()
+
+        if wants_json_response():
+            return json_response(status)
+
         return render_template(
             "dialogs/task_status.html",
             cleaning_status=status["cleaning"],
@@ -29,6 +34,10 @@ def routes(app):
     @app.route("/schedule")
     def schedule_view():
         schedule = _get_cleaning_schedule()
+
+        if wants_json_response():
+            return json_response({"schedule": schedule})
+
         return render_template("dialogs/cleaning_schedule.html", schedule=schedule)
 
 

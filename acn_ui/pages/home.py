@@ -85,7 +85,7 @@ class HomePage(ttk.Frame):
       self.label1.config(text="Hello!")
 
   def logout(self):
-    self.controller.current_user = None
+    self.controller.clear_current_user()
     self.controller.show_frame("face")
 
   def weather(self):

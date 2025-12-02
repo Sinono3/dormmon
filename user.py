@@ -13,13 +13,30 @@ from face_encoding import (
     average_encodings,
     encode_face_to_bytes,
 )
+from response_helpers import json_error, json_response, wants_json_response
 
 def routes(app):
     @app.route("/users")
     def user_list():
         """List all users."""
-        users = user_get_all()
+        users = list(user_get_all())
         balances = ledger_get_all_balances()
+
+        if wants_json_response():
+            return json_response(
+                {
+                    "users": [
+                        {
+                            "id": user.id,
+                            "name": user.name,
+                            "created_at": user.created_at.isoformat(),
+                            "balance": balances.get(user.id, 0),
+                        }
+                        for user in users
+                    ]
+                }
+            )
+
         return render_template('users.html', users=users, balances=balances)
 
 
@@ -34,13 +51,19 @@ def routes(app):
         """Handle user creation."""
         name = request.form.get('name')
         if not name:
+            if wants_json_response():
+                return json_error("Name is required", 400)
             return render_template('dialogs/error.html', error="Name is required"), 400
     
         if user_exists(name):
+            if wants_json_response():
+                return json_error("User already exists", 400)
             return render_template('dialogs/error.html', error="User already exists"), 400
     
         files = request.files.getlist('images')
         if not files or not any(f.filename for f in files):
+            if wants_json_response():
+                return json_error("At least one image is required", 400)
             return render_template('dialogs/error.html', error="At least one image is required"), 400
     
         # Process all images and combine encodings
@@ -67,14 +90,28 @@ def routes(app):
             face_encoding_bytes = encode_face_to_bytes(avg_encoding)
         
             # Create user
-            user_add(name, face_encoding_bytes)
+            new_user = user_add(name, face_encoding_bytes)
         
+            if wants_json_response():
+                return json_response(
+                    {
+                        "message": f'User "{name}" added successfully!',
+                        "user": {
+                            "id": new_user.id,
+                            "name": new_user.name,
+                            "created_at": new_user.created_at.isoformat(),
+                        },
+                    }
+                )
+
             resp = render_template('dialogs/success.html', message=f'User "{name}" added successfully!')
             resp = Response(resp)
             resp.headers['HX-Trigger'] = 'userUpdated'
             return resp
     
         except Exception as e:
+            if wants_json_response():
+                return json_error(str(e), 400)
             return render_template('dialogs/error.html', error=f"Error: {str(e)}"), 400
     
         finally:
@@ -82,6 +119,6 @@ def routes(app):
             for filepath in temp_files:
                 try:
                     os.remove(filepath)
-                except NotImplementedError:
+                except:
                     pass
 

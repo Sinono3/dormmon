@@ -1,11 +1,10 @@
 import tkinter as tk
+
+import cv2
 import ttkbootstrap as ttk
-import requests
-
 from PIL import Image, ImageTk
-from io import BytesIO
-from datetime import datetime
 
+from api import DormmonAPI, APIError
 from pages.face import FacePage
 from pages.home import HomePage
 from pages.balance import BalancePage
@@ -23,8 +22,16 @@ class UI(ttk.Window):
     self.themeStyle = ttk.Style()
     self.themeStyle.theme_use("simplex")
 
-    #Session variable
+    #Session variables
     self.current_user = None
+    self.current_user_id = None
+    self.current_user_info = None
+
+    self.api = DormmonAPI()
+    self.users = []
+    self.users_by_id = {}
+    self.categories = []
+    self.categories_by_name = {}
 
     #Dictionary of frames
     self.frames = {}
@@ -32,18 +39,8 @@ class UI(ttk.Window):
     #History stack
     self.history = []
 
-    self.trash_log = []
-    self.clean_log = []
-
     #Load shared images
     self.load_images()
-
-    self.members = {
-      "Jaz" : 0,
-      "Aldo": 0,
-      "Simon": 0,
-      "Maia": 0
-    }
 
     page_mapping = {
       "face": FacePage,
@@ -61,6 +58,7 @@ class UI(ttk.Window):
     
     #Show face page first
     self.show_frame("face")
+    self.after(100, self.initialize_reference_data)
 
 
   def load_images(self):
@@ -79,6 +77,11 @@ class UI(ttk.Window):
     imgBack = Image.open("icons/back.png")
     imgBack = imgBack.resize((15, 15))
     self.backIm = ImageTk.PhotoImage(imgBack)
+
+    imgMenu = Image.open("icons/dots.png")
+    imgMenu = imgMenu.resize((15, 15))
+    self.menuIm = ImageTk.PhotoImage(imgMenu)
+
 
   def show_frame(self, page_name):
     current = getattr(self, "current_page", None)
@@ -106,6 +109,61 @@ class UI(ttk.Window):
     if self.history:
       previous = self.history.pop()
       self.show_frame(previous)
+
+  def initialize_reference_data(self):
+    try:
+      self.refresh_users()
+      self.refresh_categories()
+    except APIError as exc:
+      print(f"Unable to load initial data: {exc}")
+
+  def refresh_users(self):
+    users = self.api.get_users()
+    self.users = users
+    self.users_by_id = {user["id"]: user for user in users}
+    return users
+
+  def refresh_categories(self):
+    categories = self.api.get_categories()
+    self.categories = categories
+    self.categories_by_name = {cat["name"]: cat for cat in categories}
+    return categories
+
+  def get_category_id(self, category_name: str):
+    if category_name not in self.categories_by_name:
+      try:
+        self.refresh_categories()
+      except APIError as exc:
+        raise APIError(f"Unable to load categories: {exc}") from exc
+    category = self.categories_by_name.get(category_name)
+    return category["id"] if category else None
+
+  def set_current_user(self, user_info):
+    self.current_user = user_info["name"]
+    self.current_user_id = user_info["id"]
+    self.current_user_info = user_info
+
+  def clear_current_user(self):
+    self.current_user = None
+    self.current_user_id = None
+    self.current_user_info = None
+
+  def capture_snapshot(self):
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+      raise RuntimeError("Camera is not available")
+    try:
+      # Read a few frames, sometimes the webcam doesn't adjust in time.
+      for _ in range(15):
+        ret, frame = cap.read()
+        if not ret:
+          raise RuntimeError("Unable to read from camera")
+      success, buffer = cv2.imencode(".jpg", frame)
+      if not success:
+        raise RuntimeError("Unable to encode captured frame")
+      return buffer.tobytes()
+    finally:
+      cap.release()
 
 
 if __name__ == '__main__':

@@ -8,6 +8,7 @@ import items
 import ledger
 import user
 import tasks
+import recognition
 from database_access import (
     database_init,
 )
@@ -35,6 +36,7 @@ event.routes(app)
 ledger.routes(app)
 items.routes(app)
 tasks.routes(app)
+recognition.routes(app)
 
 if __name__ == "__main__":
     app.run(debug=True)

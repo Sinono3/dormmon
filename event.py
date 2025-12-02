@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from flask import Response, render_template, request
+from flask import Response, render_template, request, url_for
 from PIL import Image
 
 from database import ItemStock
@@ -18,18 +18,79 @@ from database_access import (
     user_get_all,
     user_get_by_id,
 )
+from response_helpers import json_error, json_response, wants_json_response
 
 
 def routes(app):
     @app.route("/events")
     def event_list():
         """List recent events."""
-        events = event_get_recent()
+        limit = request.args.get("limit", type=int) or 50
+        category_id = request.args.get("category_id", type=int)
+        category_name = request.args.get("category_name")
+
+        events = list(
+            event_get_recent(
+                limit=limit, category_id=category_id, category_name=category_name
+            )
+        )
         # Calculate cost for each event from ledger entries
         events_with_cost = []
         for event in events:
             cost = event_get_cost(event.id)
             events_with_cost.append((event, cost))
+
+        if wants_json_response():
+            return json_response(
+                {
+                    "events": [
+                        {
+                            "id": event.id,
+                            "user": {
+                                "id": event.user.id,
+                                "name": event.user.name,
+                            },
+                            "category": {
+                                "id": event.category.id,
+                                "name": event.category.name,
+                                "icon": event.category.icon,
+                            },
+                            "cost": cost,
+                            "notes": event.notes,
+                            "logged_at": event.logged_at.isoformat(),
+                            "photo": {
+                                "filename": event.photo_path,
+                                "url": url_for(
+                                    'download_file',
+                                    name=event.photo_path,
+                                    _external=True,
+                                ),
+                            },
+                            "ledger_items": [
+                                {
+                                    "id": item.id,
+                                    "payer_id": item.payer.id,
+                                    "beneficiary_id": item.beneficiary.id,
+                                    "amount": item.amount,
+                                }
+                                for item in event.ledger_items
+                            ],
+                            "stock": (
+                                {
+                                    "item_id": event.stock.item.id,
+                                    "item_name": event.stock.item.name,
+                                    "stock": event.stock.stock,
+                                    "logged_at": event.stock.logged_at.isoformat(),
+                                }
+                                if event.stock
+                                else None
+                            ),
+                        }
+                        for event, cost in events_with_cost
+                    ]
+                }
+            )
+
         return render_template('events.html', events_with_cost=events_with_cost)
 
 
@@ -56,6 +117,8 @@ def routes(app):
         # Handle photo upload
         photo_file = request.files.get('photo')
         if not photo_file or not photo_file.filename:
+            if wants_json_response():
+                return json_error("Photo is required", 400)
             return render_template('dialogs/error.html', error="Photo is required"), 400
     
         try:
@@ -120,14 +183,37 @@ def routes(app):
                     amount=amount_per_person,
                 )
         
+            if wants_json_response():
+                return json_response(
+                    {
+                        "message": "Event added successfully!",
+                        "event": {
+                            "id": event.id,
+                            "user_id": event.user.id,
+                            "category_id": event.category.id,
+                            "notes": event.notes,
+                            "photo": {
+                                "filename": event.photo_path,
+                                "url": url_for(
+                                    'download_file', name=event.photo_path, _external=True
+                                ),
+                            },
+                        },
+                    }
+                )
+
             resp = render_template('dialogs/success.html', message='Event added successfully!')
             resp = Response(resp)
             resp.headers['HX-Trigger'] = 'eventUpdated, userUpdated'
             return resp
     
         except ValueError as e:
+            if wants_json_response():
+                return json_error(f"Invalid input: {str(e)}", 400)
             return render_template('dialogs/error.html', error=f"Invalid input: {str(e)}"), 400
         except Exception as e:
+            if wants_json_response():
+                return json_error(str(e), 400)
             return render_template('dialogs/error.html', error=f"Error: {str(e)}"), 400
 
     @app.route("/dialog/eventpic/<int:event_id>")

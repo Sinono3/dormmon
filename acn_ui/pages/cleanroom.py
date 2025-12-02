@@ -1,6 +1,10 @@
+import threading
 from datetime import datetime
-import tkinter as tk
+
 import ttkbootstrap as ttk
+
+from api import APIError
+
 
 # *================ CLEAN ROOM PAGE =====================*
 class CleanroomPage(ttk.Frame):
@@ -8,68 +12,125 @@ class CleanroomPage(ttk.Frame):
     super().__init__(controller)
     self.controller = controller
 
-
-    #Buttons
     self.backBut = ttk.Button(self, image=controller.backIm, command=controller.go_back)
     self.backBut.place(relx=1.0, x=-5, y=5, anchor="ne")
 
     self.button = ttk.Button(self, text="I cleaned the room", command=self.cleanedRoom)
     self.button.pack(pady=10)
 
-    #Labels
     self.latest = ttk.Label(self, text="", font=("Helvetica", 14))
     self.latest.pack(pady=5)
 
     self.next = ttk.Label(self, text="", font=("Helvetica", 14))
     self.next.pack(pady=5)
 
-    #Frame for roaster
+    self.statusLabel = ttk.Label(self, text="", font=("Helvetica", 12))
+    self.statusLabel.pack()
+
     self.rosterFrame = ttk.Frame(self)
     self.rosterFrame.pack(fill="both", expand=True)
   
   def cleanedRoom(self):
-    user = self.controller.current_user
-    if user is None:
-      self.latest.config(text="Error: No user recognized")
+    user_id = self.controller.current_user_id
+    if user_id is None:
+      self.statusLabel.config(text="Error: Please recognize a user first.")
       return
 
-    t = datetime.now().strftime("%Y-%m-%d  %H:%M")
-    record = {"user": user, "time": t}
+    try:
+      category_id = self.controller.get_category_id("Room Cleaning")
+    except APIError as exc:
+      self.statusLabel.config(text=f"Error: {exc}")
+      return
 
-    self.controller.clean_log.insert(0, record)
+    if category_id is None:
+      self.statusLabel.config(text="Error: 'Room Cleaning' category missing.")
+      return
 
-    self.latest.config(text=f"🧹 {user} cleaned the room at {t}")
+    self.button.config(state="disabled", text="Logging...")
+    self.statusLabel.config(text="Capturing photo...")
+    threading.Thread(
+      target=self._submit_clean_event, args=(user_id, category_id), daemon=True
+    ).start()
 
-    self.controller.members[user] += 1
-
-    self.showRoster()
+  def _submit_clean_event(self, user_id: int, category_id: int):
+    try:
+      photo = self.controller.capture_snapshot()
+      payload = {
+        "user_id": user_id,
+        "category_id": category_id,
+        "notes": "Room cleaned",
+      }
+      self.controller.api.create_event(payload, photo)
+      self.after(0, lambda: self.statusLabel.config(text="Cleaning event logged!"))
+      self.after(0, self.refresh_data)
+    except (RuntimeError, APIError) as exc:
+      self.after(0, lambda: self.statusLabel.config(text=f"Error: {exc}"))
+    finally:
+      self.after(
+        0,
+        lambda: self.button.config(state="normal", text="I cleaned the room"),
+      )
 
   def onShow(self):
     """Refresh roster every time page is shown."""
-    self.showRoster()
+    self.refresh_data()
 
-  def showRoster(self):
-    """Redraw the list of previous clean records."""
-    # Clear previous widgets
+  def refresh_data(self):
+    self.statusLabel.config(text="Loading cleaning data...")
+    threading.Thread(target=self._load_data, daemon=True).start()
+
+  def _load_data(self):
+    try:
+      events = self.controller.api.get_events(
+        category_name="Room Cleaning", limit=8
+      )
+      schedule = self.controller.api.get_schedule()
+      self.after(0, lambda: self._render(events, schedule))
+      self.after(0, lambda: self.statusLabel.config(text=""))
+    except APIError as exc:
+      self.after(0, lambda: self.statusLabel.config(text=f"Error: {exc}"))
+
+  def _render(self, events, schedule):
+    if events:
+      latest = events[0]
+      t = self._format_time(latest.get("logged_at"))
+      self.latest.config(text=f"🧹 {latest['user']['name']} cleaned at {t}")
+    else:
+      self.latest.config(text="No cleaning records yet.")
+
+    if schedule:
+      next_assignment = schedule[0]
+      self.next.config(
+        text=f"Next to clean: {next_assignment['user']} ({next_assignment['date']})",
+        bootstyle="warning",
+      )
+    else:
+      self.next.config(text="No schedule available.", bootstyle="secondary")
+
+    self._render_history(events)
+
+  def _render_history(self, events):
     for widget in self.rosterFrame.winfo_children():
       widget.destroy()
-    
-    members = self.controller.members
-
-    # Sort by who has cleaned the least
-    sortedMembers = sorted(members.items(), key=lambda x: x[1])
-
-    nextPerson = sortedMembers[0][0]
 
     ttk.Label(self.rosterFrame, text="Cleaning History:", font=("Helvetica", 14)).pack(anchor="w", padx=10, pady=5)
 
-    self.next.config(text=f"Next to clean: {nextPerson}", bootstyle="warning")
-
-    if not self.controller.clean_log:
+    if not events:
       ttk.Label(self.rosterFrame, text="No cleaning records yet.", font=("Helvetica", 12)).pack(anchor="w", padx=20)
       return
 
-    # Skip index 0 (latest)
-    for item in self.controller.clean_log:
-      ttk.Label(self.rosterFrame, text=f"{item['user']} — {item['time']}", font=("Helvetica", 12)).pack(anchor="w", padx=20)
+    for event in events:
+      t = self._format_time(event.get("logged_at"))
+      ttk.Label(
+        self.rosterFrame,
+        text=f"{event['user']['name']} — {t}",
+        font=("Helvetica", 12),
+      ).pack(anchor="w", padx=20)
 
+  @staticmethod
+  def _format_time(timestamp: str):
+    try:
+      dt = datetime.fromisoformat(timestamp)
+      return dt.strftime("%Y-%m-%d %H:%M")
+    except Exception:
+      return timestamp
