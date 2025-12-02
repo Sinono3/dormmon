@@ -1,5 +1,6 @@
 import tkinter as tk
-
+import pyrealsense2 as rs 
+import numpy as np
 import cv2
 import ttkbootstrap as ttk
 from PIL import Image, ImageTk
@@ -152,22 +153,47 @@ class UI(ttk.Window):
     self.current_user_id = None
     self.current_user_info = None
 
-  def capture_snapshot(self):
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-      raise RuntimeError("Camera is not available")
+def capture_snapshot(self):
+    # 1. Configurar el Pipeline de RealSense
+    pipeline = rs.pipeline()
+    config = rs.config()
+    
+    # 2. ACTIVAR EL COLOR (Esta línea es la clave para que no se vea B/N)
+    # 640x480 es una resolución segura, bgr8 es el formato de color estándar
+    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+
     try:
-      # Read a few frames, sometimes the webcam doesn't adjust in time.
-      for _ in range(15):
-        ret, frame = cap.read()
-        if not ret:
-          raise RuntimeError("Unable to read from camera")
-      success, buffer = cv2.imencode(".jpg", frame)
+      # 3. Iniciar la cámara
+      pipeline.start(config)
+      
+      # 4. Leer varios frames para dejar que la cámara ajuste la luz (Auto-Exposure)
+      frame_data = None
+      for _ in range(15): # Leemos 15 veces para estabilizar
+        frames = pipeline.wait_for_frames()
+        color_frame = frames.get_color_frame()
+        if color_frame:
+            # Convertir a arreglo numpy (formato imagen)
+            frame_data = np.asanyarray(color_frame.get_data())
+
+      if frame_data is None:
+        raise RuntimeError("No image could be obtained from RealSense")
+
+      # 5. Codificar la imagen final para tu programa
+      # La imagen ya viene en BGR, así que OpenCV la entiende directo
+      success, buffer = cv2.imencode(".jpg", frame_data)
+      
       if not success:
-        raise RuntimeError("Unable to encode captured frame")
+        raise RuntimeError("The captured image could not be encoded.")
+        
       return buffer.tobytes()
+
+    except Exception as e:
+       print(f"Camera error: {e}")
+       raise RuntimeError(f"Error RealSense: {e}")
+       
     finally:
-      cap.release()
+      # 6. IMPORTANTE: Apagar la cámara para liberar el USB
+      pipeline.stop()
 
 
 if __name__ == '__main__':
