@@ -1,5 +1,5 @@
-from datetime import datetime
 import tkinter as tk
+from datetime import datetime
 
 import ttkbootstrap as ttk
 
@@ -10,9 +10,12 @@ class TrashPage(ttk.Frame):
     super().__init__(controller)
     self.controller = controller
 
-    # Back button
+    # Buttons
     self.backBut = ttk.Button(self, image=controller.backIm, command=controller.go_back)
     self.backBut.place(relx=1.0, x=-5, y=5, anchor="ne")
+
+    self.button = ttk.Button(self, text="I took the trash out", command=self.trashOut)
+    self.button.pack(pady=10)
 
     # Title
     self.titleTrash = ttk.Label(self, text="Who took the trash out?", font=("Helvetica", 18))
@@ -26,8 +29,7 @@ class TrashPage(ttk.Frame):
     self.historyFrame = ttk.Frame(self)
     self.historyFrame.pack(fill="both", expand=True)
 
-  def onShow(self):
-    """Called every time this page becomes visible."""
+  def trashOut(self):
     user = self.controller.current_user
 
     if user is None:
@@ -44,6 +46,12 @@ class TrashPage(ttk.Frame):
     # Update latest record
     self.latestLabel.config(text=f"🗑 {user} took out the trash at {t}")
 
+    self.controller.members[user] += 1
+
+    self.show_history()
+
+  def onShow(self):
+    """Called every time this page becomes visible."""
     # Refresh the list
     self.show_history()
 
@@ -54,6 +62,10 @@ class TrashPage(ttk.Frame):
       widget.destroy()
 
     ttk.Label(self.historyFrame, text="Previous Records:", font=("Helvetica", 14)).pack(anchor="w", padx=10, pady=5)
+
+    if not self.controller.trash_log:
+      ttk.Label(self.historyFrame, text="No records yet.", font=("Helvetica", 12)).pack(anchor="w", padx=20)
+      return
 
     # Skip index 0 (latest)
     for item in self.controller.trash_log[1:]:

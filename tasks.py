@@ -208,3 +208,4 @@ def _next_rotation_date(reference: datetime = None):
         rotation_date += timedelta(days=7)
     return rotation_date
 
+

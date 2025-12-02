@@ -33,6 +33,7 @@ class UI(ttk.Window):
     self.history = []
 
     self.trash_log = []
+    self.clean_log = []
 
     #Load shared images
     self.load_images()
