@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 /*
 This script measures the noise level each iteration and
 calculates the average of the last averageSize readings.
@@ -13,7 +15,7 @@ const int noiseThreshold = 22;
 const int delayNum = 500;
 
 // calculation limiter: gives the number of readings to average over
-const int averageSize = 250;
+const int averageSize = 500;
 
 int sounds[averageSize] = {}; // stores the last noise measurements
 
@@ -28,39 +30,46 @@ void setup() {
 double avg(const int sounds[], int count) {
 	double sum = 0;
 	for (int j = 0; j < count; ++j) {
-		sum += sounds[j];
+		sum += (double)sounds[j];
 	}
-	return sum / count;
+	return sum / (double)count;
 }
 
 int index = 0;
 void loop() {
-	int analogSoundIn = analogRead(soundPin);
 	int digitalSoundIn = digitalRead(digitalSound);
+	// int analogSoundIn = analogRead(soundPin);
+	
+	// sounds[index] = analogSoundIn;
 
-	sounds[index] = analogSoundIn;
+	// // increment index but never higher than size of sounds[]
+	// index = (index + 1) % averageSize;
 
-	// increment index but never higher than size of sounds[]
-	index = (index + 1) % averageSize;
+	// if (index % delayNum == 0) {
+	// 	double averageNoise = avg(sounds, averageSize);
 
-	if (digitalSoundIn && index % delayNum == 0) {
-		averageNoise = avg(sounds, averageSize);
+	// 	// interesting for coding, unnecessary for regular operation
+	// 	Serial.print((double)analogSoundIn, 3);
+	// 	Serial.print(",");
+	// 	Serial.print(digitalSoundIn, 3);
+	// 	Serial.println();
 
-		// interesting for coding, unnecessary for regular operation
-		/*Serial.print("current: ");
-    Serial.print(analogSoundIn);
-    Serial.print(" | avg: ");
-    Serial.println(averageNoise);*/
+	// 	// if the average is higher than the treshold, an alert is printed
+	// 	if (averageNoise >
+	// 		noiseThreshold) { //exchange averageNoise with analogSoundIn to use the current reading instead of average
+	// 		digitalWrite(LED_BUILTIN, HIGH);
+	// 		// Serial.print("ALERT! "); // trigger for rpi to show alert popup
+	// 		// Serial.print("averageNoise");
+	// 	} else {
+	// 		digitalWrite(LED_BUILTIN, LOW);
+	// 		// Serial.println("No Alert"); // trigger for rpi to close alert popup
+	// 	}
+	// }
+	if (digitalSoundIn) {
+		Serial.print("ALERT! "); // trigger for rpi to show alert popup
+		delay(4000);
 
-		// if the average is higher than the treshold, an alert is printed
-		if (averageNoise >
-			noiseThreshold) { //exchange averageNoise with analogSoundIn to use the current reading instead of average
-			digitalWrite(LED_BUILTIN, HIGH);
-			Serial.print("ALERT! "); // trigger for rpi to show alert popup
-			Serial.print("averageNoise")
-		} else {
-			digitalWrite(LED_BUILTIN, LOW);
-			Serial.println("No Alert"); // trigger for rpi to close alert popup
-		}
+	} else {
+		Serial.println("No Alert"); // trigger for rpi to close alert popup
 	}
 }
