@@ -1,3 +1,4 @@
+import signal
 import tkinter as tk
 import numpy as np
 import cv2
@@ -176,4 +177,5 @@ class UI(ttk.Window):
 
 if __name__ == '__main__':
   ui = UI()
+  signal.signal(signal.SIGINT, lambda x, y: ui.destroy())
   ui.mainloop()
