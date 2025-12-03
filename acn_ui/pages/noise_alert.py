@@ -72,7 +72,7 @@ class NoiseAlertPage(ttk.Frame):
         SERIAL_PORT = '/dev/ttyACM0'
 
         try:
-            ser = serial.Serial(SERIAL_PORT, 9600, timeout=1)
+            ser = serial.Serial(SERIAL_PORT, 9600, timeout=0.01)
             print(">> Using REAL SENSOR")
 
             noise_alert_active = False
@@ -82,12 +82,15 @@ class NoiseAlertPage(ttk.Frame):
                     line = ser.readline().decode("utf-8", errors="ignore").strip()
 
                     if "ALERT!" in line and not noise_alert_active:
+                        print("ALERT")
                         self.process_serial_data("ALERT!")
                         noise_alert_active = True
 
                     elif "No Alert" in line and noise_alert_active:
                         self.process_serial_data("No Alert")
                         noise_alert_active = False
+                # else:
+                #     time.sleep(0.001)
 
         except Exception:
             # Fallback to simulation
