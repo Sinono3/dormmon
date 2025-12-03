@@ -17,13 +17,14 @@ class UI(ttk.Window):
   def __init__(self):
     super().__init__(themename="simplex") 
 
-    self.attributes('-fullscreen', True) 
+    self.geometry("480x320")
+    # self.attributes('-fullscreen', True) 
     self.bind("<Escape>", lambda event: self.attributes("-fullscreen", False))
-    #self.geometry("480x320")
     self.title("UI")
 
     self.themeStyle = ttk.Style()
     self.themeStyle.theme_use("simplex")
+    self.night_mode = False
 
     #Session variables
     self.current_user = None
@@ -74,9 +75,9 @@ class UI(ttk.Window):
     imgLogO = imgLogO.resize((15, 15))
     self.logoutIm = ImageTk.PhotoImage(imgLogO)
 
-    imgTheme = Image.open("icons/theme.png")
-    imgTheme = imgTheme.resize((15, 15))
-    self.themeIm = ImageTk.PhotoImage(imgTheme)
+    imgNightMode = Image.open("icons/theme.png")
+    imgNightMode = imgNightMode.resize((15, 15))
+    self.nightModeIm = ImageTk.PhotoImage(imgNightMode)
 
     imgBack = Image.open("icons/back.png")
     imgBack = imgBack.resize((15, 15))
@@ -102,12 +103,13 @@ class UI(ttk.Window):
     if hasattr(frame, "onShow"):
       frame.onShow()
   
-  def toggle_theme(self):
-    current = self.themeStyle.theme_use()
-    if current == "simplex":
-      self.themeStyle.theme_use("vapor")
+  def toggle_night_mode(self):
+    self.night_mode = not self.night_mode
+    if not self.night_mode:
+      theme = "simplex"
     else:
-      self.themeStyle.theme_use("simplex")
+      theme = "vapor"
+    self.themeStyle.theme_use(theme)
 
   def go_back(self):
     if self.history:

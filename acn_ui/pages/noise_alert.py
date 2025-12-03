@@ -9,38 +9,44 @@ import os
 class NoiseAlertPopup:
     def __init__(self, parent):
         self.parent = parent
-        self.alert_widget = None
+        self.canvas = None
 
-    def show_popup(self, message, duration=3000):
-        if self.alert_widget is not None:
+    def show_popup(self, message, duration=2000):
+        if self.canvas is not None:
             return
 
-        self.alert_widget = tk.Label(
-            self.parent,
+        root = self.parent.winfo_toplevel()
+
+        w = root.winfo_width()
+        h = root.winfo_height()
+
+        self.canvas = tk.Canvas(root, highlightthickness=0, bd=0)
+        self.canvas.place(x=0, y=0, width=w, height=h)
+
+        # Draw a red rectangle covering the screen
+        self.canvas.create_rectangle(0, 0, w, h, fill="#aa1111", outline="")
+
+        # Draw centered text (Canvas text is guaranteed to render)
+        self.canvas.create_text(
+            w // 2,
+            h // 2,
             text=message,
-            bg="#ff4444",
-            fg="white",
-            font=("Helvetica", 24, "bold"),
-            padx=15,
-            pady=10
+            fill="white",
+            font=("Helvetica", 32, "bold"),
         )
 
-        # Top center
-        self.alert_widget.place(relx=0.5, rely=0.05, anchor="n")
-
-        self.parent.after(duration, self.close_popup)
+        root.after(duration, self.close_popup)
 
     def close_popup(self):
-        if self.alert_widget is not None:
-            self.alert_widget.destroy()
-            self.alert_widget = None
-
-
+        if self.canvas is not None:
+            self.canvas.destroy()
+            self.canvas = None            
+            
 class NoiseAlertPage(ttk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.parent = parent
-        self.popup = NoiseAlertPopup(self.parent)
+    def __init__(self, controller):
+        super().__init__(controller)
+        self.controller = controller
+        self.popup = NoiseAlertPopup(self.controller)
 
         self.thread = threading.Thread(target=self.read_serial_data, daemon=True)
         self.thread.start()
@@ -60,10 +66,11 @@ class NoiseAlertPage(ttk.Frame):
     # PROCESS LINES IN UI THREAD
     # ----------------------------
     def process_serial_data(self, line):
-        if "ALERT!" in line:
-            self.parent.after(0, lambda: self.popup.show_popup("🚨 Noise Level High!"))
+        show_alert = ("ALERT!" in line) and self.controller.night_mode
+        if show_alert:
+            self.controller.after(0, lambda: self.popup.show_popup("🚨 Loud!"))
         else:
-            self.parent.after(0, self.popup.close_popup)
+            self.controller.after(0, self.popup.close_popup)
 
     # ----------------------------
     # MAIN SERIAL READER
@@ -96,3 +103,4 @@ class NoiseAlertPage(ttk.Frame):
             # Fallback to simulation
             print(">> Sensor not found. Entering SIMULATION MODE.")
             self.simulate_serial_input()
+            pass

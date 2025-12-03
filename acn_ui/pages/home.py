@@ -61,8 +61,8 @@ class HomePage(ttk.Frame):
     logOutBut = ttk.Button(self, image=controller.logoutIm, command=self.logout)
     logOutBut.place(relx=1.0, x=-5, y=5, anchor="ne")
 
-    themeBut = ttk.Button(self, image=controller.themeIm, command=self.controller.toggle_theme)
-    themeBut.place(x=5, y=5, anchor="nw")
+    nightModeBut = ttk.Button(self, image=controller.nightModeIm, command=self.controller.toggle_night_mode)
+    nightModeBut.place(x=5, y=5, anchor="nw")
 
     #grid of buttons
     self.bt1 = ttk.Button(self.middleFrame, text="See balance", style="MyButton.TButton", command=lambda: self.controller.show_frame("balance"))
