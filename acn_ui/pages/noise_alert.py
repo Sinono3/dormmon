@@ -2,73 +2,95 @@ import tkinter as tk
 import ttkbootstrap as ttk
 import serial
 import threading
-
-class NoiseAlertPopup:
-    def __init__(self):
-        self.popup = None
-
-    def show_popup(self, message):
-        if self.popup is None:  # Create popup if it does not exist
-            self.popup = tk.Toplevel()
-            self.popup.title("Noise Alert")
-            self.popup.geometry("300x100")
-            label = tk.Label(self.popup, text=message, font=("Helvetica", 16), fg='red')
-            label.pack(expand=True, padx=20, pady=20)
-            self.popup.protocol("WM_DELETE_WINDOW", self.close_popup)  # Handle close event
-
-    def close_popup(self):
-        if self.popup is not None:
-            self.popup.destroy()
-            self.popup = None
-
 import random
 import time
+import os
+
+class NoiseAlertPopup:
+    def __init__(self, parent):
+        self.parent = parent
+        self.alert_widget = None
+
+    def show_popup(self, message, duration=3000):
+        if self.alert_widget is not None:
+            return
+
+        self.alert_widget = tk.Label(
+            self.parent,
+            text=message,
+            bg="#ff4444",
+            fg="white",
+            font=("Helvetica", 24, "bold"),
+            padx=15,
+            pady=10
+        )
+
+        # Top center
+        self.alert_widget.place(relx=0.5, rely=0.05, anchor="n")
+
+        self.parent.after(duration, self.close_popup)
+
+    def close_popup(self):
+        if self.alert_widget is not None:
+            self.alert_widget.destroy()
+            self.alert_widget = None
+
+
 class NoiseAlertPage(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        self.popup = NoiseAlertPopup()
+        self.popup = NoiseAlertPopup(self.parent)
+
         self.thread = threading.Thread(target=self.read_serial_data, daemon=True)
         self.thread.start()
 
+    # ----------------------------
+    # SIMULATION MODE
+    # ----------------------------
     def simulate_serial_input(self):
-        """Simulate serial input for testing the UI."""
-        noise_threshold = 22  # Example threshold
+        noise_threshold = 22
         while True:
-            # Generate a random sound level to simulate noise levels
-            simulated_noise_level = random.randint(0, 100)
-
-            # Determine if the noise level exceeds the threshold
-            if simulated_noise_level > noise_threshold:
-                message = "ALERT!"
-            else:
-                message = "No Alert"
-
-            # Simulate reading the message in the noise_alert_page
+            level = random.randint(0, 100)
+            message = "ALERT!" if level > noise_threshold else "No Alert"
             self.process_serial_data(message)
+            time.sleep(1)
 
-            # Wait before generating the next reading
-            time.sleep(1)  # Change the duration as needed for testing
-
+    # ----------------------------
+    # PROCESS LINES IN UI THREAD
+    # ----------------------------
     def process_serial_data(self, line):
-        """Process incoming simulated serial data."""
         if "ALERT!" in line:
-            self.popup.show_popup("Noise Level High!")
-        elif "No Alert" in line:
-            self.popup.close_popup()
+            self.parent.after(0, lambda: self.popup.show_popup("🚨 Noise Level High!"))
+        else:
+            self.parent.after(0, self.popup.close_popup)
 
-
+    # ----------------------------
+    # MAIN SERIAL READER
+    # ----------------------------
     def read_serial_data(self):
-        # self.simulate_serial_input()  # for testing only
 
-        with serial.Serial('/dev/ttyUSB0', 9600, timeout=1) as ser:  # Adjust port as needed
+        SERIAL_PORT = "/dev/ttyUSB0"
+
+        try:
+            ser = serial.Serial(SERIAL_PORT, 9600, timeout=1)
+            print(">> Using REAL SENSOR")
+
             noise_alert_active = False
+
             while True:
                 if ser.in_waiting:
-                    line = ser.readline().decode('utf-8').strip()
+                    line = ser.readline().decode("utf-8", errors="ignore").strip()
+
                     if "ALERT!" in line and not noise_alert_active:
-                        self.popup.show_popup("Noise Level High!")
+                        self.process_serial_data("ALERT!")
                         noise_alert_active = True
+
                     elif "No Alert" in line and noise_alert_active:
-                        self.popup.close_popup()
+                        self.process_serial_data("No Alert")
                         noise_alert_active = False
+
+        except Exception:
+            # Fallback to simulation
+            print(">> Sensor not found. Entering SIMULATION MODE.")
+            self.simulate_serial_input()
