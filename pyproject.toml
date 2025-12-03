@@ -9,6 +9,7 @@ dependencies = [
     "flask>=3.1.2",
     "opencv-python>=4.11.0.86",
     "peewee>=3.18.3",
+    "pyserial>=3.5",
     "tf-keras>=2.20.1",
     "ttkbootstrap>=1.19.0",
 ]
