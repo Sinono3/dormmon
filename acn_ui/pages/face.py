@@ -11,6 +11,7 @@ from api import APIError
 
 FONT = cv2.FONT_HERSHEY_PLAIN
 PROCESS_PERIOD = 5
+MAX_PROCESS_TIME = 100
 COUNTDOWN_START = 8
 
 
@@ -58,12 +59,12 @@ class FacePage(ttk.Frame):
     self.cap = None
     self.preview_job = None
     self.process_idx = 0
+    self.process_idx_last_face_seen = 0
     self.countdown = COUNTDOWN_START
     self.prev_face_count = 0
-    self.running = False
 
     self.exitBut = ttk.Button(self, text="EXIT", command=self.closeWin)
-    self.exitBut.pack(anchor="center", pady=100)
+    self.exitBut.place(relx=1.0, rely=1.0, x=-5, y=-5, anchor="se")
 
   def onShow(self):
     self.statusLabel.config(text="")
@@ -72,13 +73,10 @@ class FacePage(ttk.Frame):
     self.faceButton.configure(state="normal")
 
   def startFaceRecognition(self):
-    if self.running:
-      return
     self.statusLabel.config(text="Starting camera...")
     self.faceButton.configure(state="disabled")
     self.countdown = COUNTDOWN_START
     self.process_idx = 0
-    self.running = True
     self.cap = cv2.VideoCapture(0)
     if not self.cap.isOpened():
       self._handle_error("Camera not available")
@@ -91,13 +89,16 @@ class FacePage(ttk.Frame):
     self.controller.destroy()
 
   def _schedule_frame(self):
-    if not self.running:
-      return
     self.preview_job = self.after(10, self._update_frame)
 
   def _update_frame(self):
-    if not self.running:
+    if (self.process_idx - self.process_idx_last_face_seen) > MAX_PROCESS_TIME:
+      self._stop_camera()
+      self._hide_camera()
+      self.statusLabel.config(text="")
+      self.faceButton.configure(state="normal")
       return
+
     ret, frame = self.cap.read()
     if not ret:
       self._handle_error("Unable to read from camera")
@@ -125,8 +126,8 @@ class FacePage(ttk.Frame):
           (0, 255, 0),
           1,
         )
+        self.process_idx_last_face_seen = self.process_idx
         if self.countdown <= 0:
-          self.running = False
           self._submit_snapshot(frame)
           return
       else:
@@ -178,26 +179,23 @@ class FacePage(ttk.Frame):
       self.after(0, lambda: self._on_success(user["name"]))
     except (RuntimeError, APIError) as exc:
       message = str(exc)
-      self.after(0, lambda msg=message: self._on_error(msg))
+      self.after(0, lambda msg=message: self._handle_error(msg))
     except Exception as exc:
       message = f"Unexpected error: {exc}"
-      self.after(0, lambda msg=message: self._on_error(msg))
-    finally:
-      self.after(0, lambda: self.faceButton.configure(state="normal"))
+      self.after(0, lambda msg=message: self._handle_error(msg))
 
   def _on_success(self, user_name: str):
+    self.faceButton.configure(state="normal")
     self.statusLabel.config(text=f"Welcome {user_name}! ✓")
-    self.after(800, lambda: self.controller.show_frame("home"))
-
-  def _on_error(self, message: str):
-    self.statusLabel.config(text=f"Error: {message}")
-    self._stop_camera()
+    def after():
+      self._hide_camera()
+      self.controller.show_frame("home")
+    self.after(800, after)
 
   def _handle_error(self, message: str):
-    self.running = False
+    self._hide_camera()
     self.faceButton.configure(state="normal")
     self.statusLabel.config(text=f"Error: {message}")
-    self._stop_camera()
 
   def _stop_camera(self):
     if self.preview_job is not None:
@@ -206,7 +204,10 @@ class FacePage(ttk.Frame):
     if self.cap is not None:
       self.cap.release()
       self.cap = None
-    self.running = False
+
+  def _hide_camera(self):
+    self.video_label.configure(image=None)
+    self.video_label.image = None
 
 
 
