@@ -27,34 +27,27 @@ def database_init():
         encs_bytes = encode_face_to_bytes(encs)
         return encs_bytes
 
-    user_maia, _ = User.get_or_create(
-        name="Maia",
-        defaults={
-            "face_encoding": load_face_encs("database/maia"),
-            "created_at": datetime.now(),
-        },
-    )
-    user_jaz, _ = User.get_or_create(
-        name='Jaz',
-        defaults={
-            "face_encoding": load_face_encs("database/jaz"),
-            "created_at": datetime.now(),
-        },
-    )
-    user_simon, _ = User.get_or_create(
-        name='Simon',
-        defaults={
-            "face_encoding": load_face_encs("database/simon"),
-            "created_at": datetime.now(),
-        },
-    )
-    user_aldo, _ = User.get_or_create(
-        name='Aldo',
-        defaults={
-            "face_encoding": load_face_encs("database/aldo"),
-            "created_at": datetime.now(),
-        },
-    )
+    def create_user_if_not_exist(name, path):
+        user = User.get_or_none(User.name == name)
+        if user:
+            print(f"User {name} exists")
+            return user
+        else:
+            user, _ = User.get_or_create(
+                name=name,
+                defaults={
+                    "face_encoding": load_face_encs(path),
+                    "created_at": datetime.now(),
+                },
+            )
+            print(f"Created user {name}")
+            return user
+        
+
+    _user_maia = create_user_if_not_exist("Maia", "database/maia")
+    _user_jaz = create_user_if_not_exist("Jaz", "database/jaz")
+    _user_simon = create_user_if_not_exist("Simon", "database/simon")
+    _user_aldo = create_user_if_not_exist("Aldo", "database/aldo")
 
     # Add example categories (if they don't exist)
     category_default, _ = EventCategory.get_or_create(

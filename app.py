@@ -20,7 +20,9 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize database on startup
+print("Initializing database...")
 database_init()
+print("Database initialized")
 
 @app.route("/")
 def index():
