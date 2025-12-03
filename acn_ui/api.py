@@ -89,3 +89,13 @@ class DormmonAPI:
     def get_task_status(self) -> Dict[str, Any]:
         return self._request("GET", "/status_view")
 
+    def record_payment(
+        self, from_user_id: int, to_user_id: int, amount: int
+    ) -> Dict[str, Any]:
+        data = {
+            "from_user_id": str(from_user_id),
+            "to_user_id": str(to_user_id),
+            "amount": str(amount),
+        }
+        return self._request("POST", "/ledger/pay", data=data)
+
