@@ -163,6 +163,8 @@ class UI(ttk.Window):
         ret, frame = cap.read()
         if not ret:
           raise RuntimeError("Unable to read from camera")
+
+      frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
       success, buffer = cv2.imencode(".jpg", frame)
       if not success:
         raise RuntimeError("Unable to encode captured frame")
