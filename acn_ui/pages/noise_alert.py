@@ -61,7 +61,7 @@ class NoiseAlertPage(ttk.Frame):
     def read_serial_data(self):
         # self.simulate_serial_input()  # for testing only
 
-        with serial.Serial('/dev/ttyUSB0', 9600, timeout=1) as ser:  # Adjust port as needed
+        with serial.Serial('/dev/ttyACM0', 9600, timeout=1) as ser:  # Adjust port as needed
             noise_alert_active = False
             while True:
                 if ser.in_waiting:
