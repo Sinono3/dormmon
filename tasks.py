@@ -100,7 +100,7 @@ def _build_cleaning_status() -> Dict[str, str]:
     assigned_user_name = current_assignment["user"]
     
     # Buscamos si esa persona ha limpiado RECIENTEMENTE (esta semana)
-    since = datetime.utcnow() - timedelta(days=RECENT_CLEANING_WINDOW_DAYS)
+    since = datetime.now() - timedelta(days=RECENT_CLEANING_WINDOW_DAYS)
     completed = event_user_has_category_entry_since(assigned_user_id, category, since)
 
     if completed:
