@@ -62,6 +62,9 @@ class FacePage(ttk.Frame):
     self.prev_face_count = 0
     self.running = False
 
+    self.exitBut = ttk.Button(self, text="EXIT", command=self.closeWin)
+    self.exitBut.pack(anchor="center", pady=100)
+
   def onShow(self):
     self.statusLabel.config(text="")
     self.controller.clear_current_user()
@@ -82,6 +85,10 @@ class FacePage(ttk.Frame):
       return
     self.statusLabel.config(text="Look at the camera")
     self._schedule_frame()
+
+  def closeWin(self):
+    self._stop_camera()
+    self.controller.destroy()
 
   def _schedule_frame(self):
     if not self.running:
