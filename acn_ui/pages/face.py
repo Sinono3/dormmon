@@ -10,7 +10,7 @@ from PIL import Image, ImageTk
 from api import APIError
 
 FONT = cv2.FONT_HERSHEY_PLAIN
-PROCESS_PERIOD = 2
+PROCESS_PERIOD = 5
 COUNTDOWN_START = 20
 
 
@@ -96,6 +96,7 @@ class FacePage(ttk.Frame):
       self._handle_error("Unable to read from camera")
       return
 
+    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
     frame = resize_with_pad(frame)
     overlay_frame = frame.copy()
 
@@ -139,11 +140,11 @@ class FacePage(ttk.Frame):
           1,
         )
 
-    rgb_frame = cv2.cvtColor(overlay_frame, cv2.COLOR_BGR2RGB)
-    image = Image.fromarray(rgb_frame)
-    imgtk = ImageTk.PhotoImage(image=image)
-    self.video_label.configure(image=imgtk)
-    self.video_label.image = imgtk
+      rgb_frame = cv2.cvtColor(overlay_frame, cv2.COLOR_BGR2RGB)
+      image = Image.fromarray(rgb_frame)
+      imgtk = ImageTk.PhotoImage(image=image)
+      self.video_label.configure(image=imgtk)
+      self.video_label.image = imgtk
 
     self.process_idx += 1
     self._schedule_frame()
