@@ -18,7 +18,7 @@ class UI(ttk.Window):
     super().__init__(themename="simplex") 
 
     self.geometry("480x320")
-    # self.attributes('-fullscreen', True) 
+    self.attributes('-fullscreen', True) 
     self.bind("<Escape>", lambda event: self.attributes("-fullscreen", False))
     self.title("UI")
 
