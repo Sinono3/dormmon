@@ -1,5 +1,6 @@
 import tkinter as tk
-
+import pyrealsense2 as rs 
+import numpy as np
 import cv2
 import ttkbootstrap as ttk
 from PIL import Image, ImageTk
@@ -17,7 +18,9 @@ class UI(ttk.Window):
   def __init__(self):
     super().__init__(themename="simplex") 
 
-    self.geometry("480x320")
+    self.attributes('-fullscreen', True) 
+    self.bind("<Escape>", lambda event: self.attributes("-fullscreen", False))
+    #self.geometry("480x320")
     self.title("UI")
 
     self.themeStyle = ttk.Style()
