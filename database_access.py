@@ -31,59 +31,59 @@ def database_init():
         name="Maia",
         defaults={
             "face_encoding": load_face_encs("database/maia"),
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(),
         },
     )
     user_jaz, _ = User.get_or_create(
         name='Jaz',
         defaults={
             "face_encoding": load_face_encs("database/jaz"),
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(),
         },
     )
     user_simon, _ = User.get_or_create(
         name='Simon',
         defaults={
             "face_encoding": load_face_encs("database/simon"),
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(),
         },
     )
     user_aldo, _ = User.get_or_create(
         name='Aldo',
         defaults={
             "face_encoding": load_face_encs("database/aldo"),
-            "created_at": datetime.utcnow(),
+            "created_at": datetime.now(),
         },
     )
 
     # Add example categories (if they don't exist)
     category_default, _ = EventCategory.get_or_create(
         name='Default',
-        defaults={'icon': '📋', 'created_at': datetime.utcnow()}
+        defaults={'icon': '📋', 'created_at': datetime.now()}
     )
     category_trash, _ = EventCategory.get_or_create(
         name='Trash',
-        defaults={'icon': '🗑️', 'created_at': datetime.utcnow()}
+        defaults={'icon': '🗑️', 'created_at': datetime.now()}
     )
     category_power, _ = EventCategory.get_or_create(
         name='Power',
-        defaults={'icon': '⚡️', 'created_at': datetime.utcnow()}
+        defaults={'icon': '⚡️', 'created_at': datetime.now()}
     )
     category_purchases, _ = EventCategory.get_or_create(
         name='Purchases',
-        defaults={'icon': '🛍️', 'created_at': datetime.utcnow()}
+        defaults={'icon': '🛍️', 'created_at': datetime.now()}
     )
     category_default, _ = EventCategory.get_or_create(
         name='Room Cleaning',
-        defaults={'icon': '🧹', 'created_at': datetime.utcnow()}
+        defaults={'icon': '🧹', 'created_at': datetime.now()}
     )
 
     # Add example items (if they don't exist)
     item_toilet_paper, _ = Item.get_or_create(
         name='Toilet paper',
-        defaults={'icon': '🧻', 'created_at': datetime.utcnow()}
+        defaults={'icon': '🧻', 'created_at': datetime.now()}
     )
-    # ItemStock.create(item=item_toilet_paper, stock=0, logged_at=datetime.utcnow())
+    # ItemStock.create(item=item_toilet_paper, stock=0, logged_at=datetime.now())
     db.close()
 
 
@@ -100,7 +100,7 @@ def user_get_by_id(user_id: int) -> User:
 def user_add(name: str, face_encoding: bytes) -> User:
     """Create a new user."""
     return User.create(
-        name=name, face_encoding=face_encoding, created_at=datetime.utcnow()
+        name=name, face_encoding=face_encoding, created_at=datetime.now()
     )
 
 
@@ -122,7 +122,7 @@ def category_get_by_id(category_id: int) -> EventCategory:
 
 def category_add(name: str, icon: str) -> EventCategory:
     """Create a new event category."""
-    return EventCategory.create(name=name, icon=icon, created_at=datetime.utcnow())
+    return EventCategory.create(name=name, icon=icon, created_at=datetime.now())
 
 
 def category_exists(name: str) -> bool:
@@ -173,8 +173,8 @@ def event_add(
         photo_path=photo_path,
         notes=notes,
         stock=item_stock_id,
-        logged_at=datetime.utcnow(),
-        modified_at=datetime.utcnow(),
+        logged_at=datetime.now(),
+        modified_at=datetime.now(),
     )
 
 
@@ -229,7 +229,7 @@ def ledger_add(
         payer=payer_id,
         beneficiary=beneficiary_id,
         amount=amount,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(),
     )
 
 
@@ -305,7 +305,7 @@ def item_add(
     name: str,
     icon: str,
 ) -> Item:
-    item = Item.create(name=name, icon=icon, created_at=datetime.utcnow())
+    item = Item.create(name=name, icon=icon, created_at=datetime.now())
     ItemStock.create(item=item, stock=0)
     return item
 

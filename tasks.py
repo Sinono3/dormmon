@@ -64,7 +64,7 @@ def _build_trash_status() -> Dict[str, str]:
             "message": "Never registered.",
         }
 
-    delta = datetime.utcnow() - last_event.logged_at
+    delta = datetime.now() - last_event.logged_at
     if delta.days < 1:
         hours = int(delta.total_seconds() // 3600)
         icon = "🟢"
@@ -100,7 +100,7 @@ def _build_cleaning_status() -> Dict[str, str]:
     assigned_user_name = current_assignment["user"]
     
     # Buscamos si esa persona ha limpiado RECIENTEMENTE (esta semana)
-    since = datetime.utcnow() - timedelta(days=RECENT_CLEANING_WINDOW_DAYS)
+    since = datetime.now() - timedelta(days=RECENT_CLEANING_WINDOW_DAYS)
     completed = event_user_has_category_entry_since(assigned_user_id, category, since)
 
     if completed:
@@ -110,7 +110,7 @@ def _build_cleaning_status() -> Dict[str, str]:
         # Lógica de retraso:
         # Calculamos la fecha límite (sábado a las 12:00 PM por ejemplo, o fin del día)
         # Aquí usaremos la lógica de _next_rotation_date para ver si ya nos pasamos
-        now = datetime.utcnow()
+        now = datetime.now()
         limit_date = _next_rotation_date() # Próximo sábado
         
         # Si hoy es mayor a la fecha del turno y NO se ha hecho...
@@ -119,7 +119,7 @@ def _build_cleaning_status() -> Dict[str, str]:
         
         # Simplificación: Comparamos contra el ultimo sábado.
         # Si hoy es Martes, y el turno era el Sábado pasado...
-        today = datetime.utcnow().date()
+        today = datetime.now().date()
         target_date_str = current_assignment["date"].split(" ")[0] # "2025-11-29"
         target_date = datetime.strptime(target_date_str, "%Y-%m-%d").date()
         
@@ -209,7 +209,7 @@ def _get_cleaning_schedule(weeks: int = 6) -> List[Dict[str, str]]:
     return schedule
 
 def _next_rotation_date(reference: datetime = None):
-    now = reference or datetime.utcnow()
+    now = reference or datetime.now()
     today = now.date()
     days_until_rotation = (ROTATION_DAY_OF_WEEK - today.weekday() + 7) % 7
     rotation_date = today + timedelta(days=days_until_rotation)
