@@ -11,7 +11,7 @@ from api import APIError
 
 FONT = cv2.FONT_HERSHEY_PLAIN
 PROCESS_PERIOD = 5
-COUNTDOWN_START = 20
+COUNTDOWN_START = 8
 
 
 def resize_with_pad(image: np.ndarray, size=(320, 240), color=(0, 0, 0)):
