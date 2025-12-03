@@ -1,5 +1,4 @@
 import tkinter as tk
-import pyrealsense2 as rs 
 import numpy as np
 import cv2
 import ttkbootstrap as ttk
