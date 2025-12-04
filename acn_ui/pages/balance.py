@@ -131,7 +131,7 @@ class BalancePage(ttk.Frame):
       self.toBox["values"] = names
 
     # PAY FORM APPEARS HERE ✔
-    self.payForm.place(x=0, y=40, width=480, height=300)
+    self.payForm.place(x=0, y=40, width=380, height=300)
 
 
 
