@@ -99,7 +99,7 @@ class TrashPage(ttk.Frame):
 
     latest = events[0]
     latest_time = self._format_time(latest.get("logged_at"))
-    self.latestLabel.config(text=f"🗑 {latest['user']['name']} at {latest_time}")
+    self.latestLabel.config(text=f"Last time: {latest['user']['name']} at {latest_time}")
 
     for event in events[1:]:
       t = self._format_time(event.get("logged_at"))

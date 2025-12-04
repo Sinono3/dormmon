@@ -68,7 +68,7 @@ class NoiseAlertPage(ttk.Frame):
     def process_serial_data(self, line):
         show_alert = ("ALERT!" in line) and self.controller.night_mode
         if show_alert:
-            self.controller.after(0, lambda: self.popup.show_popup("🚨 Loud!"))
+            self.controller.after(0, lambda: self.popup.show_popup("Loud!"))
         else:
             self.controller.after(0, self.popup.close_popup)
 

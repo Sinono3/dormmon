@@ -94,7 +94,7 @@ class CleanroomPage(ttk.Frame):
     if events:
       latest = events[0]
       t = self._format_time(latest.get("logged_at"))
-      self.latest.config(text=f"🧹 {latest['user']['name']} cleaned at {t}")
+      self.latest.config(text=f"Last time {latest['user']['name']} cleaned at {t}")
     else:
       self.latest.config(text="No cleaning records yet.")
 
