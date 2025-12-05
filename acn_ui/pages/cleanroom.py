@@ -135,7 +135,7 @@ class CleanroomPage(ttk.Frame):
       t = self._format_time(event.get("logged_at"))
       ttk.Label(
         self.rosterFrame,
-        text=f"{event['user']['name']} — {t}",
+        text=f"{event['user']['name']} - {t}",
         font=("Helvetica", 12),
       ).pack(anchor="w", padx=20)
 

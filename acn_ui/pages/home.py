@@ -99,7 +99,7 @@ class HomePage(ttk.Frame):
     self.iconLabel.configure(image=icon)
     self.iconLabel.image = icon
 
-    self.tempLabel.configure(text=f"Temp: {temperature:.1f} ˚C")
+    self.tempLabel.configure(text=f"Temp: {temperature:.1f} C")
     self.descripLabel.configure(text=f"{description.capitalize()}")
 
     self.after(600000, self.weather)
