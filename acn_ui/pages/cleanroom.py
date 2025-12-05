@@ -99,10 +99,22 @@ class CleanroomPage(ttk.Frame):
       self.latest.config(text="No cleaning records yet.")
 
     if schedule:
-      next_assignment = schedule[0]
+      display_assignment = None
+      for entry in schedule:
+        if entry.get("status") != "done":
+          display_assignment = entry
+          break
+
+      if display_assignment:
+        prefix = "Next to clean"
+      else:
+        display_assignment = schedule[0]
+        prefix = "Rotation complete. Next cycle starts with"
+
+      status = display_assignment.get("status", "pending")
       self.next.config(
-        text=f"Next to clean: {next_assignment['user']} ({next_assignment['date']})",
-        bootstyle="warning",
+        text=f"{prefix}: {display_assignment['user']} ({display_assignment['date']})",
+        bootstyle=self._bootstyle_for_status(status),
       )
     else:
       self.next.config(text="No schedule available.", bootstyle="secondary")
@@ -134,3 +146,11 @@ class CleanroomPage(ttk.Frame):
       return dt.strftime("%Y-%m-%d %H:%M")
     except Exception:
       return timestamp
+
+  @staticmethod
+  def _bootstyle_for_status(status: str) -> str:
+    if status == "done":
+      return "success"
+    if status == "late":
+      return "danger"
+    return "warning"

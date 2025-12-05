@@ -47,6 +47,52 @@ def _get_task_status() -> Dict[str, Dict[str, str]]:
     return {"trash": trash_status, "cleaning": cleaning_status}
 
 
+def _parse_assignment_date(entry: Dict[str, str]):
+    raw_date = entry.get("date_iso")
+    if not raw_date:
+        raw_date = entry.get("date", "").split(" ")[0]
+    try:
+        return datetime.strptime(raw_date, "%Y-%m-%d").date()
+    except ValueError:
+        return _next_rotation_date()
+
+
+def _build_assignment_status(category, user_id: int, target_date):
+    window_start = datetime.combine(target_date - timedelta(days=7), datetime.min.time())
+    completed = event_user_has_category_entry_since(user_id, category, window_start)
+
+    today = datetime.now().date()
+    status = "done" if completed else "pending"
+    status_label = "Completed" if completed else "Pending"
+    is_late = False
+    days_late = 0
+
+    if not completed:
+        if today > target_date:
+            is_late = True
+            days_late = (today - target_date).days
+            status = "late"
+            status_label = f"Late by {days_late} days"
+        else:
+            days_until = (target_date - today).days
+            if days_until == 0:
+                status_label = "Due today"
+            elif days_until == 1:
+                status_label = "Due tomorrow"
+            else:
+                status_label = f"Due in {days_until} days"
+
+    return {
+        "completed": completed,
+        "status": status,
+        "status_label": status_label,
+        "is_late": is_late,
+        "days_late": days_late,
+        "target_date": target_date,
+        "target_date_str": target_date.strftime("%Y-%m-%d"),
+    }
+
+
 def _build_trash_status() -> Dict[str, str]:
     category = category_get_by_name(TRASH_CATEGORY_NAME)
     if not category:
@@ -98,39 +144,23 @@ def _build_cleaning_status() -> Dict[str, str]:
     current_assignment = schedule[0]
     assigned_user_id = current_assignment["user_id"]
     assigned_user_name = current_assignment["user"]
-    
-    # Buscamos si esa persona ha limpiado RECIENTEMENTE (esta semana)
-    since = datetime.now() - timedelta(days=RECENT_CLEANING_WINDOW_DAYS)
-    completed = event_user_has_category_entry_since(assigned_user_id, category, since)
+    target_date = _parse_assignment_date(current_assignment)
+    status_info = _build_assignment_status(category, assigned_user_id, target_date)
 
-    if completed:
+    if status_info["completed"]:
         icon = "✅"
         message = f"{assigned_user_name} completed their turn."
     else:
-        # Lógica de retraso:
-        # Calculamos la fecha límite (sábado a las 12:00 PM por ejemplo, o fin del día)
-        # Aquí usaremos la lógica de _next_rotation_date para ver si ya nos pasamos
-        now = datetime.now()
-        limit_date = _next_rotation_date() # Próximo sábado
-        
-        # Si hoy es mayor a la fecha del turno y NO se ha hecho...
-        # Nota: Como _next_rotation_date siempre da el futuro, necesitamos ver
-        # si estamos en el periodo de "espera" o si ya es tarde.
-        
-        # Simplificación: Comparamos contra el ultimo sábado.
-        # Si hoy es Martes, y el turno era el Sábado pasado...
-        today = datetime.now().date()
-        target_date_str = current_assignment["date"].split(" ")[0] # "2025-11-29"
-        target_date = datetime.strptime(target_date_str, "%Y-%m-%d").date()
-        
-        # Si la fecha que muestra el calendario ya pasó y no hay evento:
-        if today > target_date:
-            days_late = (today - target_date).days
+        if status_info["is_late"]:
+            days_late = status_info["days_late"]
             icon = "🔴"
             message = f"{assigned_user_name} is late by {days_late} days!"
         else:
             icon = "⚠️"
-            message = f"Pending: {assigned_user_name}'s turn ({target_date_str})."
+            message = (
+                f"Pending: {assigned_user_name}'s turn "
+                f"({status_info['target_date_str']})."
+            )
 
     return {"name": "Room Cleaning", "icon": icon, "message": message}
 
@@ -186,22 +216,28 @@ def _get_cleaning_schedule(weeks: int = 6) -> List[Dict[str, str]]:
     schedule = []
     current_index = start_index
     
+    overdue = bool(last_event_time and last_event_time.date() <= previous_cycle_start)
+
     for i in range(weeks):
-        # Si es el primer item de la lista (el turno actual) y estamos atrasados,
-        # mostramos la fecha vieja en la que debió limpiar.
-        if i == 0 and last_event_time and last_event_time.date() <= previous_cycle_start:
-             # Mostramos la fecha del sábado pasado que se perdió
-             rotation_date = current_cycle_start + timedelta(days=7) # = next_rotation_date actual
-             # Nota visual: Podrías querer restar días aquí si quieres mostrar la fecha pasada
+        if overdue and i == 0:
+            rotation_date = current_cycle_start
         else:
-            rotation_date = next_rotation_date + timedelta(weeks=i)
-            
+            weeks_ahead = i if not overdue else i - 1
+            rotation_date = next_rotation_date + timedelta(weeks=max(weeks_ahead, 0))
+
         assigned_user = users[current_index]
+        status_info = _build_assignment_status(category, assigned_user.id, rotation_date)
         schedule.append(
             {
                 "date": rotation_date.strftime("%Y-%m-%d (%a)"),
+                "date_iso": status_info["target_date_str"],
                 "user": assigned_user.name,
                 "user_id": assigned_user.id,
+                "status": status_info["status"],
+                "status_label": status_info["status_label"],
+                "is_done": status_info["completed"],
+                "is_late": status_info["is_late"],
+                "days_late": status_info["days_late"],
             }
         )
         current_index = (current_index + 1) % len(users)

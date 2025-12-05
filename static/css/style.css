@@ -68,6 +68,18 @@ tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
+.status-row.status-done {
+    background-color: #d4edda !important;
+}
+
+.status-row.status-late {
+    background-color: #f8d7da !important;
+}
+
+.status-row.status-pending {
+    background-color: #fffbea;
+}
+
 .dialog {
     position: fixed;          /* take it out of normal flow */
     top: 50%;
